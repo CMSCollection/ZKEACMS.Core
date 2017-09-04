@@ -1,0 +1,7 @@
+{
+	ID:"9E4940BE-F113-4BAD-85A3-066C2C9FFF82",
+	Name:"ZKEACMS.Search",
+	FileName:"bin\\ZKEACMS.Search.dll",
+	DeveloperFileName:"bin\\Debug\\netstandard2.0\\ZKEACMS.Search.dll",
+	Enable:"true"
+}
