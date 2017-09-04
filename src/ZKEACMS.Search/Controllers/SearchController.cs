@@ -28,7 +28,7 @@ namespace ZKEACMS.Search.Controllers
 
         public async Task<IActionResult> Test()
         {
-            await _spider.Start("http://www.kingstong.com/cn");
+            await _spider.Start("http://www.kingston.com/cn");
             return View();
         }
     }
