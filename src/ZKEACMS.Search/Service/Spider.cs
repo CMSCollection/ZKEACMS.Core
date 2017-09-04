@@ -11,11 +11,13 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using ZKEACMS.Search.Models;
+using Easy.Extend;
 
 namespace ZKEACMS.Search.Service
 {
     public class Spider : ISpider
     {
+        private const string UserAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3198.0 Safari/537.36";
         private readonly IWebPageService _webPageService;
         public Spider(IWebPageService webPageService)
         {
@@ -52,18 +54,31 @@ namespace ZKEACMS.Search.Service
             Console.WriteLine(url);
             var request = WebRequest.Create(url);
             //request.Proxy = new WebProxy("kyproxy.keyou.corp", 8080);
-            request.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3198.0 Safari/537.36";
+            request.Headers["User-Agent"] = UserAgent;
 
-            var response = request.GetResponse();
-
-            var stream = response.GetResponseStream();
+            var response = request.GetResponse() as HttpWebResponse;
             string html = string.Empty;
-            using (StreamReader reader = new StreamReader(stream))
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                html = reader.ReadToEnd();
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    _webPageService.Remove(url);
+                }
+                return;
             }
-
-
+            using (var stream = response.GetResponseStream())
+            {
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    html = reader.ReadToEnd();
+                }
+            }
+            response.Dispose();
+            response.Dispose();
+            if (html.IsNullOrEmpty())
+            {
+                return;
+            }
 
             HtmlDocument doc = null;
             try
@@ -85,18 +100,11 @@ namespace ZKEACMS.Search.Service
                 loads.Add(url, string.Empty);
             }
 
-            //if (web.StatusCode != HttpStatusCode.OK)
-            //{
-            //    if (web.StatusCode == HttpStatusCode.NotFound)
-            //    {
-            //        _webPageService.Remove(url);
-            //    }
-            //    return;
-            //}
+
             var title = WebUtility.HtmlDecode(doc.DocumentNode.SelectSingleNode("/html/head/title").InnerText);
             string keywords = string.Empty;
             string description = string.Empty;
-            string pageContent = WebUtility.HtmlDecode(doc.DocumentNode.InnerText);
+            string pageContent = WebUtility.HtmlDecode(doc.DocumentNode.InnerText).NoHTML();
             foreach (var meta in doc.DocumentNode.SelectNodes("/html/head/meta"))
             {
                 string metaName = meta.GetAttributeValue("name", "");
@@ -115,7 +123,6 @@ namespace ZKEACMS.Search.Service
             if (webPage == null)
             {
                 _webPageService.Add(new WebPage { Url = url, Title = title, KeyWords = keywords, MetaDescription = description, PageContent = pageContent });
-
             }
             else
             {
@@ -123,9 +130,8 @@ namespace ZKEACMS.Search.Service
                 webPage.KeyWords = keywords;
                 webPage.MetaDescription = description;
                 webPage.PageContent = pageContent;
+                _webPageService.Update(webPage);
             }
-            _webPageService.Update(webPage);
-
             var links = doc.DocumentNode.SelectNodes("//a");
             foreach (var item in links)
             {
