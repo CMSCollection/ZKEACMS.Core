@@ -18,5 +18,10 @@ namespace ZKEACMS.Search.Service
         }
         public override WebPageDbContext DbContext { get; set; }
         public override DbSet<WebPage> CurrentDbSet => DbContext.WebPage;
+
+        public IEnumerable<WebPage> Search(string q, Pagination pagination)
+        {
+            return CurrentDbSet.Where(m => EF.Functions.Like(m.Title, q)).ToList();
+        }
     }
 }

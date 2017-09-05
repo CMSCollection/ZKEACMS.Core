@@ -36,7 +36,7 @@ namespace ZKEACMS.Search.Controllers
         }
         public IActionResult Status()
         {
-            
+            var s = _webPageService.Search("dd", null);
             return Json(IndexProcess.OutputMessage);
         }
     }

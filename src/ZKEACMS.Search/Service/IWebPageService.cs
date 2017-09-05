@@ -9,5 +9,6 @@ namespace ZKEACMS.Search.Service
 {
     public interface IWebPageService : IService<WebPage>
     {
+        IEnumerable<WebPage> Search(string q, Pagination pagination);
     }
 }
