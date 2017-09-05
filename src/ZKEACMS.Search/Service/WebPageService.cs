@@ -12,9 +12,9 @@ namespace ZKEACMS.Search.Service
 {
     public class WebPageService : ServiceBase<WebPage, WebPageDbContext>, IWebPageService
     {
-        public WebPageService(IApplicationContext applicationContext, IOptions<DatabaseOption> databaseOption) : base(applicationContext)
+        public WebPageService(IApplicationContext applicationContext, IOptions<SearchOption> databaseOption) : base(applicationContext)
         {
-            DbContext = new WebPageDbContext(databaseOption.Value.DefaultConnection);
+            DbContext = new WebPageDbContext(databaseOption.Value.ConnectionString);
         }
         public override WebPageDbContext DbContext { get; set; }
         public override DbSet<WebPage> CurrentDbSet => DbContext.WebPage;

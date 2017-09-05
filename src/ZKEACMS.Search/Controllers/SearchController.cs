@@ -14,22 +14,30 @@ using Easy.Extend;
 using ZKEACMS.Search.Models;
 using ZKEACMS.Search.Service;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using Microsoft.Extensions.Options;
 
 namespace ZKEACMS.Search.Controllers
 {
 
-    public class SearchController : BasicController<WebPage, string, IWebPageService>
+    public class SearchController : Controller
     {
-        private readonly ISpider _spider;
-        public SearchController(IWebPageService service, ISpider spider) : base(service)
+        private readonly IWebPageService _webPageService;
+        private readonly IOptions<SearchOption> _searchOption;
+        public SearchController(IWebPageService service, IOptions<SearchOption> searchOption)
         {
-            _spider = spider;
+            _webPageService = service;
+            _searchOption = searchOption;
         }
-
-        public async Task<IActionResult> Test()
+        public IActionResult StartIndex()
         {
-            await _spider.Start("http://www.kingston.com/cn");
-            return View();
+            IndexProcess.Start(_searchOption.Value.DotNet);
+            return Json(true);
+        }
+        public IActionResult Status()
+        {
+            
+            return Json(IndexProcess.OutputMessage);
         }
     }
 }

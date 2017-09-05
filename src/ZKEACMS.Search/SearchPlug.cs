@@ -56,7 +56,7 @@ namespace ZKEACMS.Search
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables().Build();
             
-            serviceCollection.Configure<DatabaseOption>(configuration.GetSection("ConnectionStrings"));
+            serviceCollection.Configure<SearchOption>(configuration);
         }
     }
 }
