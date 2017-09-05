@@ -36,7 +36,8 @@ namespace ZKEACMS.Search.Controllers
         }
         public IActionResult Status()
         {
-            var s = _webPageService.Search("dd", null);
+            Easy.RepositoryPattern.Pagination pagination = new Easy.RepositoryPattern.Pagination();
+            var s = _webPageService.Search("zkeacms", pagination);
             return Json(IndexProcess.OutputMessage);
         }
     }
