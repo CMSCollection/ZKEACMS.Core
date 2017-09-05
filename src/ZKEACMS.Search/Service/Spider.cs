@@ -52,8 +52,7 @@ namespace ZKEACMS.Search.Service
             }
 
             Console.WriteLine(url);
-            var request = WebRequest.Create(url);
-            //request.Proxy = new WebProxy("kyproxy.keyou.corp", 8080);
+            var request = WebRequest.Create(url);            
             request.Headers["User-Agent"] = UserAgent;
 
             var response = request.GetResponse() as HttpWebResponse;

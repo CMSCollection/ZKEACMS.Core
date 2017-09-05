@@ -5,11 +5,11 @@
  */
 using Easy.Mvc.Resource;
 using Easy.Mvc.Route;
-using System;
-using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Easy.RepositoryPattern;
+using System;
+using System.Collections.Generic;
 using ZKEACMS.Search.Service;
 
 namespace ZKEACMS.Search
@@ -50,6 +50,13 @@ namespace ZKEACMS.Search
         {
             serviceCollection.TryAddTransient<ISpider, Spider>();
             serviceCollection.TryAddTransient<IWebPageService, WebPageService>();
+
+            var configuration = new ConfigurationBuilder()
+            .SetBasePath(CurrentPluginPath)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables().Build();
+            
+            serviceCollection.Configure<DatabaseOption>(configuration.GetSection("ConnectionStrings"));
         }
     }
 }
