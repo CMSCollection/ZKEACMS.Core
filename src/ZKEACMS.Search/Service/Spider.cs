@@ -50,7 +50,7 @@ namespace ZKEACMS.Search.Service
             {
                 return;
             }
-
+			url = WebUtility.UrlDecode(url);
             Console.WriteLine(url);
             var request = WebRequest.Create(url);
             request.Headers["User-Agent"] = UserAgent;
