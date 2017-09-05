@@ -41,6 +41,10 @@ namespace ZKEACMS.Search
 
         private static void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
+            if (OutputMessage.Length > 1000)
+            {
+                OutputMessage = string.Empty;
+            }
             if (e.Data != null)
             {
                 OutputMessage += e.Data;

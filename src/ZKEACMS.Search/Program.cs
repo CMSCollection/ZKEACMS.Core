@@ -35,7 +35,7 @@ namespace ZKEACMS.Search
             var services = serviceCollection.BuildServiceProvider();
             var spider = ActivatorUtilities.GetServiceOrCreateInstance<ISpider>(services);
             var option = ActivatorUtilities.GetServiceOrCreateInstance<IOptions<SearchOption>>(services);
-            var task = spider.Start(args.Length == 0 ? option.Value.Host : args[0]);
+            var task = spider.Start((args == null || args.Length == 0) ? option.Value.Host : args[0]);
             task.Wait();
         }
     }

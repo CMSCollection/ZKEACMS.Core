@@ -22,11 +22,11 @@ namespace ZKEACMS.Search.Service
         public Spider(IWebPageService webPageService)
         {
             _webPageService = webPageService;
-            loads = new Dictionary<string, string>();
+            loads = new HashSet<string>();
         }
         public Uri StartUri { get; set; }
         public string Host { get; set; }
-        private Dictionary<string, string> loads;
+        private HashSet<string> loads;
         public Task Start(string url)
         {
             StartUri = new Uri(url);
@@ -46,16 +46,28 @@ namespace ZKEACMS.Search.Service
             {
                 url = Host + url;
             }
-            if (!url.StartsWith(StartUri.ToString()) || loads.ContainsKey(url) || new Uri(url).IsFile)
+            if (!url.StartsWith(StartUri.ToString()) || loads.Contains(url) || new Uri(url).IsFile)
             {
                 return;
             }
 
             Console.WriteLine(url);
-            var request = WebRequest.Create(url);            
+            var request = WebRequest.Create(url);
             request.Headers["User-Agent"] = UserAgent;
 
-            var response = request.GetResponse() as HttpWebResponse;
+            HttpWebResponse response = null;
+            try
+            {
+                response = request.GetResponse() as HttpWebResponse;
+            }
+            catch (WebException e)
+            {
+                response = e.Response as HttpWebResponse;
+            }
+            finally
+            {
+                loads.Add(url);
+            }
             string html = string.Empty;
             if (response.StatusCode != HttpStatusCode.OK)
             {
@@ -63,16 +75,17 @@ namespace ZKEACMS.Search.Service
                 {
                     _webPageService.Remove(url);
                 }
-                return;
             }
-            using (var stream = response.GetResponseStream())
+            if (response.StatusCode == HttpStatusCode.OK && response.ContentType.IndexOf("text/html") >= 0)
             {
-                using (StreamReader reader = new StreamReader(stream))
+                using (var stream = response.GetResponseStream())
                 {
-                    html = reader.ReadToEnd();
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        html = reader.ReadToEnd();
+                    }
                 }
             }
-            response.Dispose();
             response.Dispose();
             if (html.IsNullOrEmpty())
             {
@@ -93,10 +106,6 @@ namespace ZKEACMS.Search.Service
             {
                 Console.WriteLine(ex.Message);
                 return;
-            }
-            finally
-            {
-                loads.Add(url, string.Empty);
             }
 
 
