@@ -1,0 +1,12 @@
+﻿@model ZKEACMS.Search.Models.SearchWidget
+
+<form action="@Url.Action("Search","SiteSearch",new { module="Search" })" method="get" id="search-form">    
+    <div class="row">
+        <div class="col-xs-8 col-md-10">
+            <input id="user-input" name="q" type="text" autocomplete="off" placeholder="输入关键字搜索" class="form-control">
+        </div>
+        <div class="col-xs-4  col-md-2">
+            <button class="btn btn-primary btn-search" style="width: 100%;">搜 索</button>
+        </div>
+    </div>    
+</form>

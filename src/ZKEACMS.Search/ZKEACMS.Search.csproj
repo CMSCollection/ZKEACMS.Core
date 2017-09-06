@@ -21,4 +21,9 @@
     <ProjectReference Include="..\ZKEACMS\ZKEACMS.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Content\Image\" />
+    <Folder Include="DBScripts\" />
+  </ItemGroup>
+
 </Project>
