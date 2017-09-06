@@ -1,9 +1,13 @@
 ﻿# ZKEACMS 全站搜索插件
 让ZKEACMS支持搜索功能
 ![全站搜索插件](https://user-images.githubusercontent.com/6006218/30117859-0fbf8ca6-9354-11e7-89b0-5e6fbc002a99.png)
+
 ## 数据库 Microstft Sql Server 2008R2 以上
-页面的索引主要是运用了MsSql的
-[全文索引](https://docs.microsoft.com/zh-cn/sql/relational-databases/search/full-text-search)
+页面的索引主要是运用了MsSql的全文索引，如果你还不了解全文索引，可以使用以下链接来了解全文索引的相关知识
+[https://docs.microsoft.com/zh-cn/sql/relational-databases/search/full-text-search](https://docs.microsoft.com/zh-cn/sql/relational-databases/search/full-text-search)
+
+目前仅支持MsSql数据库，如果正好你不是使用MsSql数据库的话，也没有关系，它将很容易改造成与数据库无关的 [Elasticsearch](https://www.elastic.co/cn/products/elasticsearch) 或者其它的搜索组件。或者使用对应数据库的全文索引。我们只是做好了一个脚手架。
+
 ### 初始化数据库
 数据库脚本在目录DbScripts下。全文索引数据库，可以直接创建在CMS数据下，或者另外建一个数据库用于存储页面的索引数据。
 #### dbo.WebPages.Table.sql
