@@ -1,22 +1,30 @@
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.IO;
-using System.Text;
-using System.Data;
+/* http://www.zkea.net/ 
+ * Copyright 2017 
+ * ZKEASOFT 
+ * http://www.zkea.net/licenses 
+ */
+
+
+using Easy.Extend;
 using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using ZKEACMS.Search.Models;
-using Easy.Extend;
 
 namespace ZKEACMS.Search.Service
 {
     public class Spider : ISpider
     {
+        class PageResult
+        {
+            public string RequestUrl { get; set; }
+            public string ResponseUrl { get; set; }
+            public HtmlDocument Document { get; set; }
+            public HttpStatusCode StatusCode { get; set; }
+        }
         private const string UserAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3198.0 Safari/537.36";
         private readonly IWebPageService _webPageService;
         public Spider(IWebPageService webPageService)
@@ -34,13 +42,30 @@ namespace ZKEACMS.Search.Service
             return Task.Factory.StartNew(() =>
              {
                  Load(StartUri.ToString());
+                 _webPageService.Get().Each(page => OnePage(page.Url).Wait());
              });
         }
         private void Load(string url)
         {
+            var pageResult = LoadPage(url);
+            if (pageResult != null)
+            {
+                Store(pageResult);
+                var links = pageResult.Document.DocumentNode.SelectNodes("//a");
+                foreach (var item in links)
+                {
+                    var href = item.GetAttributeValue("href", "");
+                    Load(HtmlEntity.DeEntitize(href));
+                }
+            }
+
+        }
+
+        private PageResult LoadPage(string url)
+        {
             if (string.IsNullOrEmpty(url) || url == "#" || url.StartsWith("javascript:"))
             {
-                return;
+                return null;
             }
             if (!url.StartsWith("http://") && !url.StartsWith("https://"))
             {
@@ -48,13 +73,14 @@ namespace ZKEACMS.Search.Service
             }
             if (!url.StartsWith(StartUri.ToString()) || loads.Contains(url) || new Uri(url).IsFile)
             {
-                return;
+                return null;
             }
-			url = WebUtility.UrlDecode(url);
+            url = WebUtility.UrlDecode(url);
             Console.WriteLine(url);
+            PageResult pageResult = new PageResult();
+            pageResult.RequestUrl = url;
             var request = WebRequest.Create(url);
             request.Headers["User-Agent"] = UserAgent;
-
             HttpWebResponse response = null;
             try
             {
@@ -63,90 +89,108 @@ namespace ZKEACMS.Search.Service
             catch (WebException e)
             {
                 response = e.Response as HttpWebResponse;
+                if (response == null)
+                {
+                    return null;
+                }
             }
             finally
             {
                 loads.Add(url);
-            }
-            string html = string.Empty;
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                if (response.StatusCode == HttpStatusCode.NotFound)
+                if (response != null)
                 {
-                    _webPageService.Remove(url);
-                }
-            }
-            if (response.StatusCode == HttpStatusCode.OK && response.ContentType.IndexOf("text/html") >= 0)
-            {
-                using (var stream = response.GetResponseStream())
-                {
-                    using (StreamReader reader = new StreamReader(stream))
+                    pageResult.ResponseUrl = response.ResponseUri.ToString();
+                    pageResult.StatusCode = response.StatusCode;
+                    if (pageResult.RequestUrl != pageResult.ResponseUrl && !loads.Contains(pageResult.ResponseUrl))
                     {
-                        html = reader.ReadToEnd();
+                        loads.Add(pageResult.ResponseUrl);
                     }
                 }
             }
-            response.Dispose();
-            if (html.IsNullOrEmpty())
+            string html = string.Empty;
+            if (response.ContentType.IndexOf("text/html") >= 0)
+            {
+                using (response)
+                {
+                    using (var stream = response.GetResponseStream())
+                    {
+                        using (StreamReader reader = new StreamReader(stream))
+                        {
+                            html = reader.ReadToEnd();
+                        }
+                    }
+                }
+            }
+            if (html.IsNotNullAndWhiteSpace())
+            {
+                try
+                {
+                    pageResult.Document = new HtmlDocument();
+                    pageResult.Document.LoadHtml(html);
+                    if (!pageResult.Document.DocumentNode.HasChildNodes)
+                    {
+                        pageResult.Document = null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    pageResult.Document = null;
+                }
+            }
+            return pageResult;
+
+        }
+
+        private void Store(PageResult pageResult)
+        {
+            if (pageResult == null)
             {
                 return;
             }
-
-            HtmlDocument doc = null;
-            try
+            if (pageResult.StatusCode == HttpStatusCode.NotFound || pageResult.StatusCode == HttpStatusCode.MovedPermanently)
             {
-                doc = new HtmlDocument();
-                doc.LoadHtml(html);
-                if (!doc.DocumentNode.HasChildNodes)
+                _webPageService.Remove(pageResult.RequestUrl);
+            }
+            if (pageResult.Document != null && pageResult.StatusCode != HttpStatusCode.NotFound)
+            {
+                var title = WebUtility.HtmlDecode(pageResult.Document.DocumentNode.SelectSingleNode("/html/head/title").InnerText);
+                string keywords = string.Empty;
+                string description = string.Empty;
+                string pageContent = WebUtility.HtmlDecode(pageResult.Document.DocumentNode.InnerText).NoHTML();
+                foreach (var meta in pageResult.Document.DocumentNode.SelectNodes("/html/head/meta"))
                 {
-                    return;
+                    string metaName = meta.GetAttributeValue("name", "");
+
+                    if (metaName.Equals("keywords", StringComparison.OrdinalIgnoreCase))
+                    {
+                        keywords = WebUtility.HtmlDecode(meta.GetAttributeValue("content", ""));
+                    }
+                    else if (metaName.Equals("description", StringComparison.OrdinalIgnoreCase))
+                    {
+                        description = WebUtility.HtmlDecode(meta.GetAttributeValue("content", ""));
+                    }
+                }
+
+                var old = _webPageService.Get(pageResult.ResponseUrl);
+                if (old == null)
+                {
+                    _webPageService.Add(new WebPage { Url = pageResult.ResponseUrl, Title = title, KeyWords = keywords, MetaDescription = description, PageContent = pageContent });
+                }
+                else
+                {
+                    old.Title = title;
+                    old.KeyWords = keywords;
+                    old.MetaDescription = description;
+                    old.PageContent = pageContent;
+                    _webPageService.Update(old);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return;
-            }
+        }
 
-
-            var title = WebUtility.HtmlDecode(doc.DocumentNode.SelectSingleNode("/html/head/title").InnerText);
-            string keywords = string.Empty;
-            string description = string.Empty;
-            string pageContent = WebUtility.HtmlDecode(doc.DocumentNode.InnerText).NoHTML();
-            foreach (var meta in doc.DocumentNode.SelectNodes("/html/head/meta"))
-            {
-                string metaName = meta.GetAttributeValue("name", "");
-
-                if (metaName.Equals("keywords", StringComparison.OrdinalIgnoreCase))
-                {
-                    keywords = WebUtility.HtmlDecode(meta.GetAttributeValue("content", ""));
-                }
-                else if (metaName.Equals("description", StringComparison.OrdinalIgnoreCase))
-                {
-                    description = WebUtility.HtmlDecode(meta.GetAttributeValue("content", ""));
-                }
-            }
-
-            var webPage = _webPageService.Get(url);
-            if (webPage == null)
-            {
-                _webPageService.Add(new WebPage { Url = url, Title = title, KeyWords = keywords, MetaDescription = description, PageContent = pageContent });
-            }
-            else
-            {
-                webPage.Title = title;
-                webPage.KeyWords = keywords;
-                webPage.MetaDescription = description;
-                webPage.PageContent = pageContent;
-                _webPageService.Update(webPage);
-            }
-            var links = doc.DocumentNode.SelectNodes("//a");
-            foreach (var item in links)
-            {
-                var href = item.GetAttributeValue("href", "");
-                Load(HtmlEntity.DeEntitize(href));
-            }
-
+        public Task OnePage(string url)
+        {
+            return Task.Factory.StartNew(() => { Store(LoadPage(url)); });
         }
     }
 }

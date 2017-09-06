@@ -18,12 +18,25 @@ namespace ZKEACMS.Search
     {
         public override IEnumerable<RouteDescriptor> RegistRoute()
         {
-            return null;
+            yield return new RouteDescriptor
+            {
+                RouteName = "SiteSearch",
+                Template = "search",
+                Defaults = new { controller = "SiteSearch", action = "Search", module = "Search" },
+                Priority = 11
+            };
         }
 
         public override IEnumerable<AdminMenu> AdminMenu()
         {
-            return null;
+            yield return new AdminMenu
+            {
+                Title = "È«Õ¾ËÑË÷",
+                Url = "~/Admin/SiteSearch",
+                PermissionKey = PermissionKeys.ManageSearch,
+                Icon = "glyphicon-search",
+                Order = 13
+            };
         }
 
         protected override void InitScript(Func<string, ResourceHelper> script)
@@ -33,12 +46,17 @@ namespace ZKEACMS.Search
 
         protected override void InitStyle(Func<string, ResourceHelper> style)
         {
-           
+            style("Search").Include("~/Plugins/ZKEACMS.Search/Content/search.css", "~/Plugins/ZKEACMS.Search/Content/search.min.css");
         }
 
         public override IEnumerable<PermissionDescriptor> RegistPermission()
         {
-            return null;
+            yield return new PermissionDescriptor
+            {
+                Title = "¸üÐÂÍøÕ¾Ë÷Òý",
+                Module = "È«Õ¾ËÑË÷",
+                Key = PermissionKeys.ManageSearch
+            };
         }
 
         public override IEnumerable<Type> WidgetServiceTypes()
@@ -55,7 +73,7 @@ namespace ZKEACMS.Search
             .SetBasePath(CurrentPluginPath)
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables().Build();
-            
+
             serviceCollection.Configure<SearchOption>(configuration);
         }
     }

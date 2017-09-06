@@ -1,3 +1,10 @@
+/* http://www.zkea.net/ 
+ * Copyright 2017 
+ * ZKEASOFT 
+ * http://www.zkea.net/licenses 
+ */
+
+
 using Easy.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;

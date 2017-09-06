@@ -1,0 +1,69 @@
+﻿@model ZKEACMS.Search.Models.SearchResult
+@{
+    Layout = Layouts.NormalDefault;
+    Style.Reqiured("Search").AtHead();
+}
+<div class="search-result">
+    <form action="@Url.Action("Search")" method="get">
+        <div class="container-fluid">
+            <div class="row clearfix">
+                <div class="pull-left">
+                    <a href="~/">
+                        <img class="logo" src="~/images/logo_min.png" />
+                    </a>
+                </div>
+                <div class="pull-left">
+                    <div class="row">
+                        <div class="col-xs-8 col-md-10">
+                            <input type="text" value="@Model.Query" class="form-control" name="q" placeholder="输入关键字进行搜索" />
+                        </div>
+                        <div class="col-xs-4 col-md-2">
+                            <button class="btn btn-primary btn-search">搜 索</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <hr />
+    @if (Model.WebPages != null)
+    {
+        <ul class="media-list">
+            @foreach (var item in Model.WebPages)
+            {
+                <li class="media">
+                    <div class="media-body">
+                        <h4 class="media-heading">
+                            <a href="@item.Url" target="_blank">
+                                @item.Title
+                            </a>
+                        </h4>
+                        <div class="caption">
+                            @if (item.MetaDescription.IsNotNullAndWhiteSpace())
+                            {
+                                @item.MetaDescription
+                            }
+                            else
+                            {
+                                if (item.PageContent.Length > 150)
+                                {
+                                    @item.PageContent.Substring(0, 150)
+                                }
+                                else
+                                {
+                                    @item.PageContent
+                                }
+                            }
+                            ...
+                        </div>
+                        <div class="caption">
+                            <a href="@item.Url" target="_blank">@item.Url</a>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+
+        Html.Pagin(Model.Pagination);
+    }
+</div>

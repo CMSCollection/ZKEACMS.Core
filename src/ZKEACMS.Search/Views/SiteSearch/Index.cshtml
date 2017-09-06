@@ -1,0 +1,56 @@
+﻿@{
+
+}
+<div class="panel panel-default">
+    <div class="panel-heading">全站搜索</div>
+    <div class="panel-body">
+        <p>
+            网站的内容必需要经过索引才会出现在搜索结果中
+        </p>
+        <p>
+            直接在这里更新索引是不被推荐的，但您仍可以在这里开始索引你的网站。
+        </p>
+        <hr />
+        <input type="button" class="btn btn-primary start-index" value="开始索引" />
+    </div>
+    <div class="panel-footer">
+        页面地址如果留空，则会更新整站的索引，这可能会需要很长的时间。您可以不用停留在这个页面等待索引完成。
+    </div>
+</div>
+<div id="process-info" class="panel panel-default hide">
+    <div class="panel-heading">索引进行中</div>
+    <ul class="list-group" id="items"></ul>
+</div>
+@using (Script.AtFoot())
+{
+    <script type="text/javascript">
+        $(function () {
+            $(document).on("click", ".btn.start-index", function () {
+                $(this).prop("disabled", true);
+                $.post("@Url.Action("Start")", { path: $("#path").val() }, function () { });
+            });
+            var items = $("#items");
+            var process = $("#process-info");
+
+            setInterval(function () {
+                $.post("@Url.Action("Status")", function (data) {
+                    if (items.children().size() > 50) {
+                        items.empty();
+                    }
+                    if (data.message) {
+                        process.removeClass("hide");
+                        var urls = data.message.split("\r\n");
+                        $.each(urls, function () {
+                            if (this!="") {
+                                items.prepend('<li class="list-group-item">' + this + '</li>');
+                            }
+                        });
+                    } else {
+                        process.addClass("hide");
+                    }
+                });
+            }, 2000);
+        });
+
+    </script>
+}

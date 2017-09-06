@@ -4,19 +4,17 @@
  * http://www.zkea.net/licenses 
  */
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ZKEACMS.Search.Service
+namespace ZKEACMS.Search.Models
 {
-    public interface ISpider
+    public class SearchResult
     {
-        Uri StartUri { get; set; }
-        string Host { get; set; }
-        Task Start(string url);
-        Task OnePage(string url);
+        public string Query { get; set; }
+        public IEnumerable<WebPage> WebPages { get; set; }
+        public Pagin Pagination { get; set; }
     }
 }
