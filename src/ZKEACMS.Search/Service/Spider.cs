@@ -55,21 +55,32 @@ namespace ZKEACMS.Search.Service
                 foreach (var item in links)
                 {
                     var href = item.GetAttributeValue("href", "");
+                    if (!href.StartsWith("/"))
+                    {
+                        href = CombineUrl(new Uri(pageResult.ResponseUrl).AbsolutePath, href);
+                    }
                     Load(HtmlEntity.DeEntitize(href));
                 }
             }
 
         }
-
+        private string CombineUrl(params string[] urls)
+        {
+            for (int i = 0; i < urls.Length; i++)
+            {
+                urls[i] = urls[i].Trim('/');
+            }
+            return string.Join("/", urls);
+        }
         private PageResult LoadPage(string url)
         {
-            if (string.IsNullOrEmpty(url) || url == "#" || url.StartsWith("javascript:"))
+            if (string.IsNullOrEmpty(url) || url == "#" || url.StartsWith("javascript:") || url.Length > 900)
             {
                 return null;
             }
             if (!url.StartsWith("http://") && !url.StartsWith("https://"))
             {
-                url = Host + url;
+                url = CombineUrl(Host, url);
             }
             if (!url.StartsWith(StartUri.ToString()) || loads.Contains(url) || new Uri(url).IsFile)
             {
@@ -155,6 +166,10 @@ namespace ZKEACMS.Search.Service
             if (pageResult.Document != null && pageResult.StatusCode != HttpStatusCode.NotFound)
             {
                 var title = WebUtility.HtmlDecode(pageResult.Document.DocumentNode.SelectSingleNode("/html/head/title").InnerText);
+                if (title.IsNotNullAndWhiteSpace() && title.Length > 500)
+                {
+                    title = title.Substring(0, 500);
+                }
                 string keywords = string.Empty;
                 string description = string.Empty;
                 string pageContent = WebUtility.HtmlDecode(pageResult.Document.DocumentNode.InnerText).NoHTML();
@@ -165,10 +180,18 @@ namespace ZKEACMS.Search.Service
                     if (metaName.Equals("keywords", StringComparison.OrdinalIgnoreCase))
                     {
                         keywords = WebUtility.HtmlDecode(meta.GetAttributeValue("content", ""));
+                        if (keywords.IsNotNullAndWhiteSpace() && keywords.Length > 500)
+                        {
+                            keywords = keywords.Substring(0, 500);
+                        }
                     }
                     else if (metaName.Equals("description", StringComparison.OrdinalIgnoreCase))
                     {
                         description = WebUtility.HtmlDecode(meta.GetAttributeValue("content", ""));
+                        if (description != null && description.Length > 500)
+                        {
+                            description = description.Substring(0, 500);
+                        }
                     }
                 }
 

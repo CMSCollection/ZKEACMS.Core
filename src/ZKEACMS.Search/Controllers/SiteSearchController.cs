@@ -36,7 +36,7 @@ namespace ZKEACMS.Search.Controllers
         }
         public IActionResult Start(string path)
         {
-            SpiderProcess.Start(_searchOption.Value.DotNet);
+            SpiderProcess.Start(_searchOption.Value.Command);
             return Json(true);
         }
         [HttpPost]
