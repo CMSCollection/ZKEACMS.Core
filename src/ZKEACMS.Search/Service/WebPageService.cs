@@ -30,6 +30,7 @@ namespace ZKEACMS.Search.Service
 
         public IEnumerable<WebPage> Search(string q, Pagination pagination)
         {
+            pagination.PageSize = 10;
             if (q.IsNullOrEmpty())
             {
                 return Enumerable.Empty<WebPage>();
@@ -45,7 +46,7 @@ namespace ZKEACMS.Search.Service
             var dbConnection = DbContext.Database.GetDbConnection();
             using (var command = dbConnection.CreateCommand())
             {
-                command.CommandText = "select COUNT(1) from WebPages T0 inner join containstable(WebPages,*,@Query) T1 on T0.Url=T1.[KEY]";
+                command.CommandText = "SELECT COUNT(1) FROM WebPages T0 INNER JOIN CONTAINSTABLE(WebPages,(Title,KeyWords,MetaDescription,PageContent),@Query) T1 ON T0.Url=T1.[KEY]";
                 command.Parameters.Add(new SqlParameter("@Query", q));
                 if (dbConnection.State != ConnectionState.Open)
                 {
@@ -56,9 +57,9 @@ namespace ZKEACMS.Search.Service
             }
 
             var result = DbContext.WebPage.FromSql(new RawSqlString(
-                              @"select T0.Url,T0.Title,T0.KeyWords,T0.MetaDescription,T0.PageContent,T0.Status,T0.Description,T0.CreateBy,T0.CreatebyName,T0.CreateDate,T0.LastUpdateBy,T0.LastUpdateByName,T0.LastUpdateDate from 
-                            WebPages T0 inner join containstable(WebPages,*,@Query) T1 on T0.Url=T1.[KEY]
-                            order by T1.[RANK] DESC
+                              @"SELECT T0.Url,T0.Title,T0.KeyWords,T0.MetaDescription,T0.PageContent,T0.Status,T0.Description,T0.CreateBy,T0.CreatebyName,T0.CreateDate,T0.LastUpdateBy,T0.LastUpdateByName,T0.LastUpdateDate FROM 
+                            WebPages T0 INNER JOIN CONTAINSTABLE(WebPages,(Title,KeyWords,MetaDescription,PageContent),@Query) T1 on T0.Url=T1.[KEY]
+                            ORDER by T1.[RANK] DESC
                             OFFSET @PageSize * @PageIndex ROWS FETCH NEXT @PageSize ROWS ONLY;"),
                               new SqlParameter("@Query", q), new SqlParameter("@PageSize", pagination.PageSize), new SqlParameter("@PageIndex", pagination.PageIndex));
             return result.ToList();

@@ -48,7 +48,7 @@ namespace ZKEACMS.Search.Service
         private void Load(string url)
         {
             var pageResult = LoadPage(url);
-            if (pageResult != null)
+            if (pageResult != null && pageResult.Document != null)
             {
                 Store(pageResult);
                 var links = pageResult.Document.DocumentNode.SelectNodes("//a");

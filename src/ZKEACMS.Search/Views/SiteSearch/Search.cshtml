@@ -1,32 +1,33 @@
 ﻿@using ZKEACMS.Search
 @model ZKEACMS.Search.Models.SearchResult
 @{
+    ViewBag.Title = Model.Query + " 全站搜索";
     Layout = Layouts.NormalDefault;
     Style.Reqiured("Search").AtHead();
 }
-<div class="search-result">
-    <form action="@Url.Action("Search")" method="get">
-        <div class="container-fluid">
-            <div class="row clearfix">
-                <div class="pull-left">
-                    <a href="~/">
-                        <img class="logo" src="~/images/logo_min.png" />
-                    </a>
-                </div>
-                <div class="pull-left">
-                    <div class="row">
-                        <div class="col-xs-8 col-md-10">
-                            <input type="text" value="@Model.Query" class="form-control" name="q" placeholder="输入关键字进行搜索" />
+<div class="search-header">
+    <div class="container">
+        <div class="row">
+            <form action="@Url.Action("Search")" method="get">
+                <div class="container-fluid">
+                    <div class="row clearfix">
+                        <div class="pull-left">
+                            <a href="~/">
+                                <img class="logo" src="~/images/logo_min.png" />
+                            </a>
                         </div>
-                        <div class="col-xs-4 col-md-2">
+                        <div class="pull-left">
+                            <input type="text" value="@Model.Query" class="form-control" name="q" placeholder="输入关键字进行搜索" />
                             <button class="btn btn-primary btn-search">搜 索</button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
-    </form>
-    <hr />
+    </div>
+    
+</div>
+<div class="search-result">
     @if (Model.WebPages != null && Model.WebPages.Any())
     {
         <ul class="media-list">
@@ -57,7 +58,7 @@
                 </li>
             }
         </ul>
-
+        
         Html.Pagin(Model.Pagination);
     }
 </div>
