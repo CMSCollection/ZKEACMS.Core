@@ -31,4 +31,5 @@ dotnet命令，如果没有设置Path或是Linux，可能需要设置完整的do
 。这样一来，就可以添加一个计划任务，来定时启动这个搜索索引程序。注意配置文件（appsettings.json）要在同一目录下。如果是开发环境，可以直接鼠标右键->调式->启动新的实例来启动爬虫程序。
 ## 开始搜索
 编辑你的任意页面，或者添加一个页面。然后往页面中添加**搜索**插件。
+
 ![搜索](https://raw.githubusercontent.com/SeriaWei/ZKEACMS.Core/search/src/ZKEACMS.Search/Content/Image/Widget.Search.png)
