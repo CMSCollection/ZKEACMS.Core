@@ -13,5 +13,6 @@ namespace ZKEACMS.Search
         public string ConnectionString { get; set; }
         public string Command { get; set; }
         public string Host { get; set; }
+        public string SearchEngine { get; set; }
     }
 }

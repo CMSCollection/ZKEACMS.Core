@@ -13,6 +13,7 @@ namespace ZKEACMS.Search.Models
 {
     public class SearchResult
     {
+        public string[] KeyWorlds { get; set; }
         public string Query { get; set; }
         public IEnumerable<WebPage> WebPages { get; set; }
         public Pagin Pagination { get; set; }

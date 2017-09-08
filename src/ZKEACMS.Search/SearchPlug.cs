@@ -68,6 +68,7 @@ namespace ZKEACMS.Search
         {
             serviceCollection.TryAddTransient<ISpider, Spider>();
             serviceCollection.TryAddTransient<IWebPageService, WebPageService>();
+            serviceCollection.AddTransient<ISearchService, MsSqlFullTextSearchService>();
 
             var configuration = new ConfigurationBuilder()
             .SetBasePath(CurrentPluginPath)

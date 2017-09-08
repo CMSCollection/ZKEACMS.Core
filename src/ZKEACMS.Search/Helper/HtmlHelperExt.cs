@@ -7,9 +7,8 @@ namespace ZKEACMS.Search
 {
     public static class HtmlHelperExt
     {
-        public static IHtmlContent StrongKeyWord(this IHtmlHelper htmlHelper, string content, string keyWorld)
+        public static IHtmlContent StrongKeyWord(this IHtmlHelper htmlHelper, string content, string[] keyWorlds)
         {
-            var keyWorlds = keyWorld.Split(" ", StringSplitOptions.RemoveEmptyEntries);
             foreach (var item in keyWorlds)
             {
                 var index = content.IndexOf(item, StringComparison.OrdinalIgnoreCase);
@@ -21,11 +20,10 @@ namespace ZKEACMS.Search
             }
             return new HtmlString(content);
         }
-        public static IHtmlContent ExtractDescription(this IHtmlHelper htmlHelper, string content, string keyWorld)
+        public static IHtmlContent ExtractDescription(this IHtmlHelper htmlHelper, string content, string[] keyWorlds)
         {
-            var keyWorlds = keyWorld.Split(" ", StringSplitOptions.RemoveEmptyEntries);
             int index = 0;
-            foreach (var item in keyWorld)
+            foreach (var item in keyWorlds)
             {
                 index = content.IndexOf(item);
                 if (index >= 0)
@@ -39,11 +37,11 @@ namespace ZKEACMS.Search
             }
             if (content.Length >= index + 150)
             {
-                return htmlHelper.StrongKeyWord(content.Substring(index, 150), keyWorld);
+                return htmlHelper.StrongKeyWord(content.Substring(index, 150), keyWorlds);
             }
             else
             {
-                return htmlHelper.StrongKeyWord(content.Substring(index, content.Length - index), keyWorld);
+                return htmlHelper.StrongKeyWord(content.Substring(index, content.Length - index), keyWorlds);
             }
         }
     }

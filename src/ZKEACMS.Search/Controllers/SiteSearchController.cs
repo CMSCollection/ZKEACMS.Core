@@ -17,6 +17,8 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ZKEACMS.Search.Controllers
 {
@@ -25,10 +27,12 @@ namespace ZKEACMS.Search.Controllers
     {
         private readonly IWebPageService _webPageService;
         private readonly IOptions<SearchOption> _searchOption;
-        public SiteSearchController(IWebPageService service, IOptions<SearchOption> searchOption)
+        private readonly ISearchService _searchService;
+        public SiteSearchController(IWebPageService service, IOptions<SearchOption> searchOption, IEnumerable<ISearchService> searchServices)
         {
             _webPageService = service;
             _searchOption = searchOption;
+            _searchService = searchServices.First(m => m.SearchEngine == searchOption.Value.SearchEngine);
         }
         public IActionResult Index()
         {
@@ -55,7 +59,8 @@ namespace ZKEACMS.Search.Controllers
             return View(new SearchResult
             {
                 Query = q,
-                WebPages = _webPageService.Search(q, pagination),
+                KeyWorlds = _searchService.GetKeyWords(q),
+                WebPages = _searchService.Search(q, pagination),
                 Pagination = pagination
             });
         }

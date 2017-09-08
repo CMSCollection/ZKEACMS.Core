@@ -37,17 +37,17 @@
                     <div class="media-body">
                         <h4 class="media-heading">
                             <a href="@item.Url" target="_blank">
-                                @Html.StrongKeyWord(item.Title, Model.Query)
+                                @Html.StrongKeyWord(item.Title, Model.KeyWorlds)
                             </a>
                         </h4>
                         <div class="caption">
                             @if (item.MetaDescription.IsNotNullAndWhiteSpace())
                             {
-                                @Html.StrongKeyWord(item.MetaDescription, Model.Query)
+                                @Html.StrongKeyWord(item.MetaDescription, Model.KeyWorlds)
                             }
                             else
                             {
-                                @Html.ExtractDescription(item.PageContent, Model.Query)
+                                @Html.ExtractDescription(item.PageContent, Model.KeyWorlds)
                             }
                             ...
                         </div>
