@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Http;
 namespace ZKEACMS.Widget
 {
 
-    public class WidgetBasePartService : ServiceBase<WidgetBasePart, CMSDbContext>, IWidgetBasePartService
+    public class WidgetBasePartService : ServiceBase<WidgetBasePart>, IWidgetBasePartService
     {
         protected const string EncryptWidgetTemplate = "EncryptWidgetTemplate";
         private readonly IWidgetActivator _widgetActivator;
@@ -27,39 +27,50 @@ namespace ZKEACMS.Widget
         static ICacheManager<IEnumerable<WidgetBase>> PageWidgetCacheManage;
         static WidgetBasePartService()
         {
-            PageWidgetCacheManage = CacheFactory.Build<IEnumerable<WidgetBase>>(setting => setting.WithDictionaryHandle("PageWidgets"));
+            PageWidgetCacheManage = CacheFactory.Build<IEnumerable<WidgetBase>>(setting =>
+            {
+                setting.WithDictionaryHandle("PageWidgets").WithExpiration(ExpirationMode.Sliding, new TimeSpan(0, 10, 0));
+            });
         }
-        public WidgetBasePartService(IApplicationContext applicationContext, IWidgetActivator widgetActivator, IServiceProvider serviceProvider, IHttpContextAccessor httpContextAccessor)
-            : base(applicationContext)
+        public WidgetBasePartService(IApplicationContext applicationContext, IWidgetActivator widgetActivator, IServiceProvider serviceProvider, IHttpContextAccessor httpContextAccessor, CMSDbContext dbContext)
+            : base(applicationContext, dbContext)
         {
             _widgetActivator = widgetActivator;
             _serviceProvider = serviceProvider;
             _httpContextAccessor = httpContextAccessor;
+            IsNeedNotifyChange = true;
         }
         public override DbSet<WidgetBasePart> CurrentDbSet
         {
             get
             {
-                return DbContext.WidgetBasePart;
+                return (DbContext as CMSDbContext).WidgetBasePart;
             }
         }
+
+        public bool IsNeedNotifyChange { get; set; }
+
         private void TriggerChange(WidgetBase widget)
         {
-            if (widget != null && widget.PageID.IsNotNullAndWhiteSpace())
+            if (IsNeedNotifyChange)
             {
-                using (var pageService = _serviceProvider.GetService<IPageService>())
+                if (widget != null && widget.PageID.IsNotNullAndWhiteSpace())
                 {
-                    pageService.MarkChanged(widget.PageID);
+                    using (var pageService = _serviceProvider.GetService<IPageService>())
+                    {
+                        pageService.MarkChanged(widget.PageID);
+                    }
+                }
+                else if (widget != null && widget.LayoutID.IsNotNullAndWhiteSpace())
+                {
+                    using (var layoutService = _serviceProvider.GetService<ILayoutService>())
+                    {
+                        layoutService.MarkChanged(widget.LayoutID);
+                    }
+                    PageWidgetCacheManage.ClearRegion(_httpContextAccessor.HttpContext.Request.Host.Value);
                 }
             }
-            else if (widget != null && widget.LayoutID.IsNotNullAndWhiteSpace())
-            {
-                using (var layoutService = _serviceProvider.GetService<ILayoutService>())
-                {
-                    layoutService.MarkChanged(widget.LayoutID);
-                }
-                PageWidgetCacheManage.ClearRegion(_httpContextAccessor.HttpContext.Request.Host.Value);
-            }
+            
         }
 
         public IEnumerable<WidgetBase> GetByLayoutId(string layoutId)

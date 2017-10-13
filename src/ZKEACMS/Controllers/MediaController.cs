@@ -1,4 +1,7 @@
-/* http://www.zkea.net/ Copyright 2016 ZKEASOFT http://www.zkea.net/licenses */
+/* http://www.zkea.net/ 
+ * Copyright 2016 ZKEASOFT 
+ * http://www.zkea.net/licenses */
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +20,7 @@ using Easy.Constant;
 
 namespace ZKEACMS.Controllers
 {
-    [DefaultAuthorize]
+    [DefaultAuthorize(Policy = PermissionKeys.ViewMedia)]
     public class MediaController : BasicController<MediaEntity, string, IMediaService>
     {
         public MediaController(IMediaService service)
@@ -25,12 +28,12 @@ namespace ZKEACMS.Controllers
         {
         }
         [NonAction]
-        public override ActionResult Index()
+        public override IActionResult Index()
         {
             return base.Index();
         }
 
-        public ActionResult Index(string ParentId, int? pageIndex)
+        public IActionResult Index(string ParentId, int? pageIndex)
         {
             ParentId = ParentId ?? "#";
             Pagination pagin = new Pagination { PageIndex = pageIndex ?? 0 };
@@ -66,12 +69,12 @@ namespace ZKEACMS.Controllers
             }
         }
 
-        public ActionResult Select(string ParentId, int? pageIndex)
+        public IActionResult Select(string ParentId, int? pageIndex)
         {
             ViewBag.PopUp = true;
             return Index(ParentId, pageIndex);
         }
-        [HttpPost]
+        [HttpPost, DefaultAuthorize(Policy = PermissionKeys.ManageMedia)]
         public JsonResult Save(string id, string title, string parentId)
         {
             MediaEntity entity = null;
@@ -89,7 +92,7 @@ namespace ZKEACMS.Controllers
             }
             return Json(entity);
         }
-        [HttpPost]
+        [HttpPost, DefaultAuthorize(Policy = PermissionKeys.ManageMedia)]
         public JsonResult Upload(string parentId, string folder, long size)
         {
             if (Request.Form.Files.Count > 0)
@@ -135,7 +138,7 @@ namespace ZKEACMS.Controllers
             }
             return Json(false);
         }
-        [HttpPost]
+        [HttpPost, DefaultAuthorize(Policy = PermissionKeys.ManageMedia)]
         public JsonResult AppendFile(string id, long position, long size)
         {
             var media = Service.Get(id);
@@ -158,7 +161,8 @@ namespace ZKEACMS.Controllers
             }
             return Json(false);
         }
-        public override JsonResult Delete(string ids)
+        [DefaultAuthorize(Policy = PermissionKeys.ManageMedia)]
+        public override IActionResult Delete(string ids)
         {
             DeleteMedia(ids);
             return base.Delete(ids);

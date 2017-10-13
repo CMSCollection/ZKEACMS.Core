@@ -1,4 +1,6 @@
-/* http://www.zkea.net/ Copyright 2016 ZKEASOFT http://www.zkea.net/licenses */
+/* http://www.zkea.net/ 
+ * Copyright 2016 ZKEASOFT 
+ * http://www.zkea.net/licenses */
 
 using Easy;
 using ZKEACMS.Common.ViewModels;
@@ -16,7 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ZKEACMS.Controllers
 {
-    [DefaultAuthorize]
+    [DefaultAuthorize(Policy = PermissionKeys.ViewLayout)]
     public class LayoutController : BasicController<LayoutEntity, string, ILayoutService>
     {
         private readonly IPageService _pageService;
@@ -30,19 +32,19 @@ namespace ZKEACMS.Controllers
             _widgetService = widgetService;
         }
 
-        
-        public override ActionResult Index()
+
+        public override IActionResult Index()
         {
             return View(Service.Get());
         }
-        
-        public ActionResult LayoutWidget(string LayoutID)
+
+        public IActionResult LayoutWidget(string LayoutID)
         {
             ViewBag.LayoutID = LayoutID;
             return View(Service.Get());
         }
         [HttpPost]
-        public ActionResult LayoutZones(string ID)
+        public IActionResult LayoutZones(string ID)
         {
             var layout = Service.Get(ID);
             var viewModel = new LayoutZonesViewModel
@@ -55,39 +57,39 @@ namespace ZKEACMS.Controllers
             };
             return View(viewModel);
         }
-        
-        public override ActionResult Create()
+
+        public override IActionResult Create()
         {
             return View(new LayoutEntity { ImageUrl = LayoutEntity.DefaultThumbnial, ImageThumbUrl = LayoutEntity.DefaultThumbnial });
         }
-        [HttpPost]
-        public override ActionResult Create(LayoutEntity entity)
+        [HttpPost, DefaultAuthorize(Policy = PermissionKeys.ManageLayout)]
+        public override IActionResult Create(LayoutEntity entity)
         {
             base.Create(entity);
             return RedirectToAction("Design", new { entity.ID });
         }
-        
-        public override ActionResult Edit(string ID)
+
+        public override IActionResult Edit(string ID)
         {
             return base.Edit(ID);
         }
-        
-        [HttpPost]
-        public override ActionResult Edit(LayoutEntity entity)
+
+        [HttpPost, DefaultAuthorize(Policy = PermissionKeys.ManageLayout)]
+        public override IActionResult Edit(LayoutEntity entity)
         {
             if (entity.ActionType == ActionType.Design)
             {
-                return RedirectToAction("Design", new {entity.ID });
+                return RedirectToAction("Design", new { entity.ID });
             }
             return base.Edit(entity);
         }
-        public ActionResult Design(string ID, string PageID)
+        public IActionResult Design(string ID, string PageID)
         {
             // Stop Caching in IE
-           
+
 
             // Stop Caching in Firefox
-           
+
             LayoutEntity layout = null;
             if (ID.IsNotNullAndWhiteSpace())
             {
@@ -99,10 +101,10 @@ namespace ZKEACMS.Controllers
             }
             return View(layout ?? new LayoutEntity());
         }
-        
-        public ActionResult SaveLayout(string[] html, LayoutEntity layout, ZoneCollection zones)
+        [DefaultAuthorize(Policy = PermissionKeys.ManageLayout)]
+        public IActionResult SaveLayout(string[] html, LayoutEntity layout, ZoneCollection zones)
         {
-            layout.Html = Helper.GenerateHtml(html, zones);
+            layout.Html = Zone.Helper.GenerateHtml(html, zones);
             layout.Zones = zones;
             Service.UpdateDesign(layout);
             if (layout.Page != null)
@@ -111,7 +113,7 @@ namespace ZKEACMS.Controllers
             }
             return RedirectToAction("Index");
         }
-        public ActionResult SelectZone(string layoutId, string pageId, string zoneId)
+        public IActionResult SelectZone(string layoutId, string pageId, string zoneId)
         {
             LayoutEntity layou = null;
             if (layoutId.IsNotNullAndWhiteSpace())

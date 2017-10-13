@@ -17,7 +17,7 @@ using Easy.Mvc.Plugin;
 
 namespace ZKEACMS.SectionWidget.Service
 {
-    public class SectionWidgetService : WidgetService<Models.SectionWidget, SectionDbContext>, ISectionWidgetService
+    public class SectionWidgetService : WidgetService<Models.SectionWidget>, ISectionWidgetService
     {
         private readonly ISectionGroupService _sectionGroupService;
         private readonly ISectionContentProviderService _sectionContentProviderService;
@@ -26,8 +26,8 @@ namespace ZKEACMS.SectionWidget.Service
 
         public SectionWidgetService(IWidgetBasePartService widgetService, ISectionGroupService sectionGroupService,
             ISectionContentProviderService sectionContentProviderService, ISectionTemplateService sectionTemplateService,
-            IApplicationContext applicationContext)
-            : base(widgetService, applicationContext)
+            IApplicationContext applicationContext, SectionDbContext dbContext)
+            : base(widgetService, applicationContext, dbContext)
         {
             _sectionGroupService = sectionGroupService;
             _sectionContentProviderService = sectionContentProviderService;
@@ -38,7 +38,7 @@ namespace ZKEACMS.SectionWidget.Service
         {
             get
             {
-                return DbContext.SectionWidget;
+                return (DbContext as SectionDbContext).SectionWidget;
             }
         }
 
@@ -158,6 +158,10 @@ namespace ZKEACMS.SectionWidget.Service
             widget.ZoneID = null;
             widget.IsSystem = false;
             widget.IsTemplate = true;
+            if (!widget.Thumbnail.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !widget.Thumbnail.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                widget.Thumbnail = Helper.Url.Combine(Loader.PluginFolder, new DirectoryInfo(pluginRootPath).Name, "Thumbnail", Path.GetFileName(widget.Thumbnail));
+            }
             AddWidget(widget);
         }
     }

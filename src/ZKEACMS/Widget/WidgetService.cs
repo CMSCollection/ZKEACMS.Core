@@ -17,17 +17,20 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace ZKEACMS.Widget
 {
-    public abstract class WidgetService<T, TDB> : ServiceBase<T, TDB>, IWidgetPartDriver where T : WidgetBase where TDB : CMSDbContext, new()
+    public abstract class WidgetService<T> : ServiceBase<T>, IWidgetPartDriver where T : WidgetBase
     {
-        public WidgetService(IWidgetBasePartService widgetBasePartService, IApplicationContext applicationContext)
-            : base(applicationContext)
+        public WidgetService(IWidgetBasePartService widgetBasePartService, IApplicationContext applicationContext, CMSDbContext dbContext)
+            : base(applicationContext, dbContext)
         {
             WidgetBasePartService = widgetBasePartService;
         }
 
         public IWidgetBasePartService WidgetBasePartService { get; private set; }
-
-
+        public bool IsNeedNotifyChange
+        {
+            get { return WidgetBasePartService.IsNeedNotifyChange; }
+            set { WidgetBasePartService.IsNeedNotifyChange = value; }
+        }
         public override void Add(T item)
         {
             item.ID = Guid.NewGuid().ToString("N");
@@ -65,7 +68,7 @@ namespace ZKEACMS.Widget
             }
             return model;
         }
-        
+
         public override IList<T> Get(Expression<Func<T, bool>> filter)
         {
             var widgets = base.Get(filter);
@@ -106,7 +109,7 @@ namespace ZKEACMS.Widget
 
             base.Remove(item, saveImmediately);
 
-            WidgetBasePartService.Remove(WidgetBasePartService.Get(item.ID));
+            WidgetBasePartService.Remove(item.ToWidgetBasePart());
 
         }
         public override void RemoveRange(params T[] items)

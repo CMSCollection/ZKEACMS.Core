@@ -1,4 +1,7 @@
-/* http://www.zkea.net/ Copyright 2016 ZKEASOFT http://www.zkea.net/licenses */
+/* http://www.zkea.net/ 
+ * Copyright 2016 ZKEASOFT 
+ * http://www.zkea.net/licenses */
+
 using System.Linq;
 using ZKEACMS.Common.ViewModels;
 using Easy.Constant;
@@ -41,12 +44,12 @@ namespace ZKEACMS.Controllers
             _widgetService = widgetService;
         }
         [Widget]
-        public ActionResult PreView()
+        public IActionResult PreView()
         {
             return View();
         }
         [DefaultAuthorize(Policy = PermissionKeys.ViewPage)]
-        public override ActionResult Index()
+        public override IActionResult Index()
         {
             return base.Index();
         }
@@ -58,13 +61,13 @@ namespace ZKEACMS.Controllers
             return Json(node);
         }
         [NonAction]
-        public override ActionResult Create()
+        public override IActionResult Create()
         {
             return base.Create();
         }
 
         [ViewDataLayouts, DefaultAuthorize(Policy = PermissionKeys.ManagePage)]
-        public ActionResult Create(string ParentID = "#")
+        public IActionResult Create(string ParentID = "#")
         {
             var page = new PageEntity
             {
@@ -85,7 +88,7 @@ namespace ZKEACMS.Controllers
 
         }
         [ViewDataLayouts, HttpPost, DefaultAuthorize(Policy = PermissionKeys.ManagePage)]
-        public override ActionResult Create(PageEntity entity)
+        public override IActionResult Create(PageEntity entity)
         {
             if (ModelState.IsValid)
             {
@@ -103,7 +106,7 @@ namespace ZKEACMS.Controllers
             return View(entity);
         }
         [ViewDataLayouts, DefaultAuthorize(Policy = PermissionKeys.ManagePage)]
-        public override ActionResult Edit(string Id)
+        public override IActionResult Edit(string Id)
         {
             var page = Service.Get(Id);
             if (page == null || page.IsPublishedPage)
@@ -115,7 +118,7 @@ namespace ZKEACMS.Controllers
         }
         [ViewDataLayouts, DefaultAuthorize(Policy = PermissionKeys.ManagePage)]
         [HttpPost]
-        public override ActionResult Edit(PageEntity entity)
+        public override IActionResult Edit(PageEntity entity)
         {
             if (entity.ActionType == ActionType.Design)
             {
@@ -143,7 +146,7 @@ namespace ZKEACMS.Controllers
             return RedirectToAction("Index", new { PageID = id });
         }
         [EditWidget, DefaultAuthorize(Policy = PermissionKeys.ManagePage)]
-        public ActionResult Design(string ID)
+        public IActionResult Design(string ID)
         {
             // Stop Caching in IE
 
@@ -154,7 +157,7 @@ namespace ZKEACMS.Controllers
             return View();
         }
         [ViewPage, DefaultAuthorize(Policy = PermissionKeys.ViewPage)]
-        public ActionResult ViewPage(string ID)
+        public IActionResult ViewPage(string ID)
         {
             return View("PreView");
         }
@@ -178,17 +181,17 @@ namespace ZKEACMS.Controllers
             });
 
         }
-        public ActionResult RedirectView(string Id, bool? preview)
+        public IActionResult RedirectView(string Id, bool? preview)
         {
             return Redirect(Service.Get(Id).Url + ((preview ?? true) ? "?ViewType=" + ReView.Review : ""));
         }
         [DefaultAuthorize(Policy = PermissionKeys.ViewPage)]
-        public ActionResult Select()
+        public IActionResult Select()
         {
             return View();
         }
         [DefaultAuthorize(Policy = PermissionKeys.ViewPage)]
-        public ActionResult PageZones(QueryContext context)
+        public IActionResult PageZones(QueryContext context)
         {
             var page = Service.Get(context.PageID);
             var layout = _layoutService.Get(page.LayoutId);

@@ -1,4 +1,7 @@
-/* http://www.zkea.net/ Copyright 2016 ZKEASOFT http://www.zkea.net/licenses */
+/* http://www.zkea.net/ 
+ * Copyright 2016 ZKEASOFT 
+ * http://www.zkea.net/licenses */
+
 using Easy.Constant;
 using Easy.Extend;
 using Easy.Modules.Role;
@@ -15,7 +18,7 @@ using ZKEACMS;
 
 namespace ZKEACMS.Controllers
 {
-    [DefaultAuthorize]
+    [DefaultAuthorize(Policy = PermissionKeys.ViewUser)]
     public class UserController : BasicController<UserEntity, string, IUserService>
     {
         private IApplicationContextAccessor _applicationContextAccessor;
@@ -24,15 +27,15 @@ namespace ZKEACMS.Controllers
         {
             _applicationContextAccessor = applicationContextAccessor;
         }
-        public override ActionResult Create()
+        public override IActionResult Create()
         {
             var entity = new UserEntity();
             entity.Status = (int)RecordStatus.Active;
             entity.Roles = new List<UserRoleRelation>();
             return View(entity);
         }
-        [HttpPost]
-        public override ActionResult Create(UserEntity entity)
+        [HttpPost,DefaultAuthorize(Policy = PermissionKeys.ManageUser)]
+        public override IActionResult Create(UserEntity entity)
         {
             try
             {
@@ -45,8 +48,8 @@ namespace ZKEACMS.Controllers
             }
             return View(entity);
         }
-        [HttpPost]
-        public override ActionResult Edit(UserEntity entity)
+        [HttpPost, DefaultAuthorize(Policy = PermissionKeys.ManageUser)]
+        public override IActionResult Edit(UserEntity entity)
         {
             if (ModelState.IsValid)
             {
@@ -60,12 +63,12 @@ namespace ZKEACMS.Controllers
             return base.Edit(entity);
         }
 
-        public ActionResult PassWord()
+        public IActionResult PassWord()
         {
             return View();
         }
         [HttpPost]
-        public ActionResult PassWord(UserEntity user)
+        public IActionResult PassWord(UserEntity user)
         {
             var logOnUser = Service.Login(_applicationContextAccessor.Current.CurrentUser.UserID, user.PassWord, UserType.Administrator, Request.HttpContext.Connection.RemoteIpAddress.ToString());
             if (logOnUser != null)
