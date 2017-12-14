@@ -76,6 +76,9 @@ namespace ZKEACMS.Search
             .AddEnvironmentVariables().Build();
 
             serviceCollection.Configure<SearchOption>(configuration);
+
+
+            serviceCollection.AddDbContext<WebPageDbContext>();
         }
     }
 }

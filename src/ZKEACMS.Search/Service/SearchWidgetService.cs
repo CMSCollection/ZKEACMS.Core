@@ -10,8 +10,8 @@ namespace ZKEACMS.Search.Service
 {
     public class SearchWidgetService : SimpleWidgetService<SearchWidget>
     {
-        public SearchWidgetService(IWidgetBasePartService widgetBasePartService, IApplicationContext applicationContext) : 
-            base(widgetBasePartService, applicationContext)
+        public SearchWidgetService(IWidgetBasePartService widgetBasePartService, IApplicationContext applicationContext, CMSDbContext dbContext) :
+            base(widgetBasePartService, applicationContext, dbContext)
         {
         }
     }
