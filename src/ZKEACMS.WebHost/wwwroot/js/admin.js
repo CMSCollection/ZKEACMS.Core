@@ -57,11 +57,13 @@ $(function () {
                     var target = obj.parent().siblings("input.form-control");
                     target.val(win.GetSelected());
                     box.close();
+                    target.trigger("change");
                 });
                 $(this.document).on("click", ".confirm", function () {
                     var target = obj.parent().siblings("input.form-control");
                     target.val($(this).data("result"));
                     box.close();
+                    target.trigger("change");
                 });
             }
         });
@@ -101,10 +103,12 @@ $(function () {
                 $(this.document).find("#confirm").click(function () {
                     obj.val(win.GetSelected());
                     box.close();
+                    obj.trigger("change");
                 });
                 $(this.document).on("click", ".confirm", function () {
                     obj.val($(this).data("result"));
                     box.close();
+                    obj.trigger("change");
                 });
             }
         });
@@ -137,7 +141,9 @@ $(function () {
 
     if ($.fn.datepicker) {
         $(".Date").each(function () {
-            $(this).datepicker({ language: "zh-CN", format: $(this).attr("JsDateFormat") });
+            if (!$(this).prop("readonly") && !$(this).prop("disabled")) {
+                $(this).datepicker({ language: "zh-CN", format: $(this).attr("JsDateFormat") });
+            }            
         });
     }
     $(document).on("click", ".nav.nav-tabs a", function () {

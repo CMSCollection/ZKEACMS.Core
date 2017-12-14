@@ -1,4 +1,4 @@
-/* http://www.zkea.net/ Copyright 2016 ZKEASOFT http://www.zkea.net/licenses */
+﻿/* http://www.zkea.net/ Copyright 2016 ZKEASOFT http://www.zkea.net/licenses */
 using System;
 using System.Collections.Generic;
 using Easy.Mvc.Resource;
@@ -46,6 +46,13 @@ namespace ZKEACMS.Product
                         Url = "~/admin/ProductCategory",
                         Icon = "glyphicon-th-list",
                         PermissionKey = PermissionKeys.ViewProductCategory
+                    },
+                    new AdminMenu
+                    {
+                        Title = "产品标签",
+                        Url = "~/admin/ProductCategoryTag",
+                        Icon = "glyphicon-tag",
+                        PermissionKey = PermissionKeys.ViewProductCategoryTag
                     }
                 }
             };
@@ -55,12 +62,18 @@ namespace ZKEACMS.Product
         {
             script("PhotoWall")
                 .Include("~/Plugins/ZKEACMS.Product/Scripts/jquery-photowall/jquery-photowall.js");
+
+            script("product-ecommerce")
+                .Include("~/Plugins/ZKEACMS.Product/Scripts/product-ecommerce.js", "~/Plugins/ZKEACMS.Product/Scripts/product-ecommerce.min.js");
         }
 
         protected override void InitStyle(Func<string, ResourceHelper> style)
         {
             style("PhotoWall")
                 .Include("~/Plugins/ZKEACMS.Product/Scripts/jquery-photowall/jquery-photowall.css");
+
+            style("product-ecommerce")
+                .Include("~/Plugins/ZKEACMS.Product/Content/product-ecommerce.css", "~/Plugins/ZKEACMS.Product/Content/product-ecommerce.min.css");
         }
 
         public override IEnumerable<PermissionDescriptor> RegistPermission()
@@ -70,6 +83,8 @@ namespace ZKEACMS.Product
             yield return new PermissionDescriptor(PermissionKeys.PublishProduct, "产品", "发布产品", "");
             yield return new PermissionDescriptor(PermissionKeys.ViewProductCategory, "产品", "查看产品类别", "");
             yield return new PermissionDescriptor(PermissionKeys.ManageProductCategory, "产品", "管理产品类别", "");
+            yield return new PermissionDescriptor(PermissionKeys.ViewProductCategoryTag, "产品", "查看产品标签", "");
+            yield return new PermissionDescriptor(PermissionKeys.ManageProductCategoryTag, "产品", "管理产品标签", "");
         }
 
         public override IEnumerable<Type> WidgetServiceTypes()
@@ -83,6 +98,9 @@ namespace ZKEACMS.Product
         {
             serviceCollection.AddTransient<IProductService, ProductService>();
             serviceCollection.AddTransient<IProductCategoryService, ProductCategoryService>();
+            serviceCollection.AddTransient<IProductCategoryTagService, ProductCategoryTagService>();
+            serviceCollection.AddTransient<IProductTagService, ProductTagService>();
+            serviceCollection.AddTransient<IProductImageService, ProductImageService>();
             serviceCollection.AddDbContext<ProductDbContext>();
         }
         

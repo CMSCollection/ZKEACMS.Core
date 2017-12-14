@@ -1,4 +1,4 @@
-/* 
+ï»¿/* 
  * http://www.zkea.net/ 
  * Copyright 2017 ZKEASOFT 
  * http://www.zkea.net/licenses 
@@ -30,43 +30,63 @@ namespace ZKEACMS.Message
         {
             yield return new AdminMenu
             {
-                Title = "ÁôÑÔ°å",
+                Title = "ç•™è¨€è¯„è®º",
                 Icon = "glyphicon-volume-up",
-                Url = "~/Admin/Message",
                 Order = 7,
-                PermissionKey = PermissionKeys.ViewMessage
+                Children = new List<AdminMenu>
+                {
+                    new AdminMenu
+                    {
+                        Title = "ç•™è¨€",
+                        Url = "~/Admin/Message",
+                        Order = 1,
+                        Icon = "glyphicon-volume-up",
+                        PermissionKey = PermissionKeys.ViewMessage
+                    },
+                    new AdminMenu
+                    {
+                        Title = "è¯„è®º",
+                        Url = "~/Admin/Comments",
+                        Order = 2,
+                        Icon = "glyphicon-comment",
+                        PermissionKey = PermissionKeys.ViewComments
+                    }
+                }
             };
         }
 
-       
+
 
         public override IEnumerable<PermissionDescriptor> RegistPermission()
         {
-            yield return new PermissionDescriptor(PermissionKeys.ViewMessage, "ÁôÑÔ°å", "²é¿´ÁôÑÔ", "");
-            yield return new PermissionDescriptor(PermissionKeys.ManageMessage, "ÁôÑÔ°å", "¹ÜÀíÁôÑÔ", "");
+            yield return new PermissionDescriptor(PermissionKeys.ViewMessage, "ç•™è¨€è¯„è®º", "æŸ¥çœ‹ç•™è¨€", "");
+            yield return new PermissionDescriptor(PermissionKeys.ManageMessage, "ç•™è¨€è¯„è®º", "ç®¡ç†ç•™è¨€", "");
+            yield return new PermissionDescriptor(PermissionKeys.ViewComments, "ç•™è¨€è¯„è®º", "æŸ¥çœ‹è¯„è®º", "");
+            yield return new PermissionDescriptor(PermissionKeys.ManageComments, "ç•™è¨€è¯„è®º", "ç®¡ç†è¯„è®º", "");
         }
 
         public override IEnumerable<Type> WidgetServiceTypes()
         {
             yield return typeof(MessageBoxWidgetService);
             yield return typeof(MessageWidgetService);
+            yield return typeof(CommentsWidgetService);
         }
 
         public override void ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<IMessageService, MessageService>();
-
             serviceCollection.AddDbContext<MessageDbContext>();
+            serviceCollection.AddTransient<ICommentsService, CommentsService>();
         }
 
         protected override void InitScript(Func<string, ResourceHelper> script)
         {
-            
+            script("comments").Include("~/Plugins/ZKEACMS.Message/Scripts/comments.js", "~/Plugins/ZKEACMS.Message/Scripts/comments.min.js");
         }
 
         protected override void InitStyle(Func<string, ResourceHelper> style)
         {
-            
+            style("comments").Include("~/Plugins/ZKEACMS.Message/Content/comments.css", "~/Plugins/ZKEACMS.Message/Content/comments.min.css");
         }
     }
 }

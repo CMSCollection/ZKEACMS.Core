@@ -194,6 +194,27 @@ if %ERRORLEVEL% NEQ 0 goto errors
 @echo FormDataItem
 sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "Tables\dbo.FormDataItem.Table.sql"
 if %ERRORLEVEL% NEQ 0 goto errors
+@echo ProductTag
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "Tables\dbo.ProductTag.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo ProductCategoryTag
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "Tables\dbo.ProductCategoryTag.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo ProductImage
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "Tables\dbo.ProductImage.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo Basket
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "Tables\dbo.Basket.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo Order
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "Tables\dbo.Order.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo OrderItem
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "Tables\dbo.OrderItem.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo Comments
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "Tables\dbo.Comments.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
 
 @echo InitailData...
 @echo ArticleType
@@ -357,6 +378,27 @@ sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "Initial
 if %ERRORLEVEL% NEQ 0 goto errors
 @echo FormDataItem
 sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "InitialData\dbo.FormDataItem.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo ProductTag
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "InitialData\dbo.ProductTag.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo ProductCategoryTag
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "InitialData\dbo.ProductCategoryTag.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo ProductImage
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "InitialData\dbo.ProductImage.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo Basket
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "InitialData\dbo.Basket.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo Order
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "InitialData\dbo.Order.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo OrderItem
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "InitialData\dbo.OrderItem.Table.sql"
+if %ERRORLEVEL% NEQ 0 goto errors
+@echo Comments
+sqlcmd -x -S %server% -d %dataBase% -U %dbUserId% -P %dbPassword% -b -i "InitialData\dbo.Comments.Table.sql"
 if %ERRORLEVEL% NEQ 0 goto errors
 
 @echo -----------------------------------------------------------------------------
