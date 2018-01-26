@@ -8,7 +8,6 @@ using ZKEACMS.Widget;
 
 namespace ZKEACMS.Search.Models
 {
-    [ViewConfigure(typeof(SearchWidgetMetaData))]
     public class SearchWidget : SimpleWidgetBase
     {
     }

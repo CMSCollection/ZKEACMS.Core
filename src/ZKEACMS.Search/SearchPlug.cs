@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
 using ZKEACMS.Search.Service;
+using Easy;
+using ZKEACMS.Search.Models;
 
 namespace ZKEACMS.Search
 {
@@ -69,6 +71,8 @@ namespace ZKEACMS.Search
             serviceCollection.TryAddTransient<ISpider, Spider>();
             serviceCollection.TryAddTransient<IWebPageService, WebPageService>();
             serviceCollection.AddTransient<ISearchService, MsSqlFullTextSearchService>();
+
+            serviceCollection.ConfigureMetaData<SearchWidget, SearchWidgetMetaData>();
 
             var configuration = new ConfigurationBuilder()
             .SetBasePath(CurrentPluginPath)
