@@ -16,6 +16,8 @@ using Microsoft.Extensions.Configuration;
 using Alipay.AopSdk.F2FPay.AspnetCore;
 using ZKEACMS.Shop.Payment;
 using ZKEACMS.Account;
+using Easy;
+using ZKEACMS.Shop.Models;
 
 namespace ZKEACMS.Shop
 {
@@ -84,6 +86,11 @@ namespace ZKEACMS.Shop
         {
             yield return new PermissionDescriptor { Module = "商城", Title = "查看订单", Key = PermissionKeys.ViewOrder };
             yield return new PermissionDescriptor { Module = "商城", Title = "管理订单", Key = PermissionKeys.ManageOrder };
+
+            yield return new PermissionDescriptor { Module = "商城", Title = "查看支付平台支付信息", Key = PermissionKeys.ViewOrderPayment };
+            yield return new PermissionDescriptor { Module = "商城", Title = "查看支付平台退款信息", Key = PermissionKeys.ViewOrderRefund };
+            yield return new PermissionDescriptor { Module = "商城", Title = "退款", Key = PermissionKeys.RefundOrder };
+           //yield return new PermissionDescriptor { Module = "商城", Title = "关闭订单", Key = PermissionKeys.CloseOrder };
         }
 
         public override IEnumerable<Type> WidgetServiceTypes()
@@ -97,6 +104,12 @@ namespace ZKEACMS.Shop
             serviceCollection.TryAddTransient<IOrderService, OrderService>();
             serviceCollection.TryAddTransient<IOrderItemService, OrderItemService>();
             serviceCollection.AddTransient<IUserCenterLinksProvider, ShopCenterLinksProvider>();
+            serviceCollection.AddTransient<IPaymentService, AliPaymentService>();
+
+            serviceCollection.ConfigureMetaData<Basket, BasketMetaData>();
+            serviceCollection.ConfigureMetaData<Order, OrderMetaData>();
+            serviceCollection.ConfigureMetaData<OrderItem, OrderItemMetaData>();
+
             serviceCollection.AddDbContext<OrderDbContext>();
 
             var configuration = new ConfigurationBuilder()

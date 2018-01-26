@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using ZKEACMS.Message.Service;
+using Easy;
+using ZKEACMS.Message.Models;
 
 namespace ZKEACMS.Message
 {
@@ -75,8 +77,26 @@ namespace ZKEACMS.Message
         public override void ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<IMessageService, MessageService>();
-            serviceCollection.AddDbContext<MessageDbContext>();
             serviceCollection.AddTransient<ICommentsService, CommentsService>();
+
+            serviceCollection.ConfigureMetaData<Comments, CommentsMetadata>();
+            serviceCollection.ConfigureMetaData<CommentsWidget, CommentsWidgetMetaData>();
+            serviceCollection.ConfigureMetaData<MessageBoxWidget, MessageBoxWidgetMetaData>();
+            serviceCollection.ConfigureMetaData<MessageEntity, MessageMetaData>();
+            serviceCollection.ConfigureMetaData<MessageWidget, MessageWidgetMetaData>();
+
+            serviceCollection.Configure<MessageBoxWidget>(option =>
+            {
+                option.DataSourceLinkTitle = "留言";
+                option.DataSourceLink = "~/admin/Message";
+            });
+            serviceCollection.Configure<CommentsWidget>(option =>
+            {
+                option.DataSourceLinkTitle = "评论";
+                option.DataSourceLink = "~/admin/Comments";
+            });
+
+            serviceCollection.AddDbContext<MessageDbContext>();
         }
 
         protected override void InitScript(Func<string, ResourceHelper> script)

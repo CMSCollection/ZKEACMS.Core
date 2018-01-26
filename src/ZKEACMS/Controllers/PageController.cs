@@ -2,26 +2,22 @@
  * Copyright 2016 ZKEASOFT 
  * http://www.zkea.net/licenses */
 
-using System.Linq;
-using ZKEACMS.Common.ViewModels;
 using Easy.Constant;
 using Easy.Extend;
-using Easy.Mvc.Controllers;
-using ZKEACMS.Page;
-using Microsoft.AspNetCore.Mvc;
-using ZKEACMS.Filter;
-using Easy.Mvc.Attribute;
-using ZKEACMS.Layout;
-using Easy;
-using Easy.Mvc.ValueProvider;
-using ZKEACMS.Zone;
-using ZKEACMS.Widget;
-using System;
-using Microsoft.AspNetCore.Http;
-using Easy.ViewPort.jsTree;
-using Microsoft.Extensions.DependencyInjection;
-using Easy.Mvc.Authorize;
 using Easy.Mvc;
+using Easy.Mvc.Authorize;
+using Easy.Mvc.Controllers;
+using Easy.Mvc.ValueProvider;
+using Easy.ViewPort.jsTree;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Net;
+using ZKEACMS.Common.ViewModels;
+using ZKEACMS.Filter;
+using ZKEACMS.Layout;
+using ZKEACMS.Page;
+using ZKEACMS.Widget;
+using ZKEACMS.Zone;
 
 namespace ZKEACMS.Controllers
 {
@@ -183,7 +179,13 @@ namespace ZKEACMS.Controllers
         }
         public IActionResult RedirectView(string Id, bool? preview)
         {
-            return Redirect(Service.Get(Id).Url + ((preview ?? true) ? "?ViewType=" + ReView.Review : ""));
+            var pathArray = Service.Get(Id).Url.Split('/');
+            for (int i = 1; i < pathArray.Length; i++)
+            {
+                pathArray[i] = WebUtility.UrlEncode(pathArray[i]);
+            }
+            var url = string.Join("/", pathArray);
+            return Redirect(url + ((preview ?? true) ? "?ViewType=" + ReView.Review : ""));
         }
         [DefaultAuthorize(Policy = PermissionKeys.ViewPage)]
         public IActionResult Select()

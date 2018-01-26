@@ -10,23 +10,30 @@ using System.Reflection;
 using ZKEACMS.Widget;
 using Easy.Extend;
 using System.IO;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace ZKEACMS
 {
     public abstract class PluginBase : ResourceManager, IRouteRegister, IPluginStartup
     {
-        public IHostingEnvironment HostingEnvironment { get; set; }
+        public Assembly Assembly { get; set; }
         public abstract IEnumerable<RouteDescriptor> RegistRoute();
         public abstract IEnumerable<AdminMenu> AdminMenu();
         public abstract IEnumerable<PermissionDescriptor> RegistPermission();
         public abstract IEnumerable<Type> WidgetServiceTypes();
         public abstract void ConfigureServices(IServiceCollection serviceCollection);
+        public virtual void ConfigureApplication(IApplicationBuilder app, IHostingEnvironment env)
+        {
+
+        }
         public static Dictionary<Type, string> pluginPathCache = new Dictionary<Type, string>();
         public string CurrentPluginPath
         {
             get;
             set;
         }
+
         public static string GetPath<T>() where T : PluginBase
         {
             Type pluginType = typeof(T);
@@ -36,9 +43,9 @@ namespace ZKEACMS
             }
             return string.Empty;
         }
-        public virtual void InitPlug()
+        public virtual void Setup(params object[] args)
         {
-            var pluginType = this.GetType();            
+            var pluginType = this.GetType();
             if (!pluginPathCache.ContainsKey(pluginType))
             {
                 pluginPathCache.Add(pluginType, CurrentPluginPath);
@@ -48,7 +55,7 @@ namespace ZKEACMS
             {
                 AdminMenus.Menus.AddRange(menus);
             }
-            this.Excute();
+            this.SetupResource();
             var permissions = this.RegistPermission();
             if (permissions != null)
             {
@@ -79,6 +86,22 @@ namespace ZKEACMS
                     }
                 }
             }
+            if (args != null && args.Length > 0)
+            {
+                foreach (var item in args)
+                {
+                    IServiceCollection serviceCollection = item as IServiceCollection;
+                    if (serviceCollection != null)
+                    {
+                        ConfigureServices(serviceCollection);
+                        if (ActionDescriptorProvider.PluginControllers.ContainsKey(Assembly.FullName))
+                        {
+                            ActionDescriptorProvider.PluginControllers[Assembly.FullName].Each(c => serviceCollection.TryAddTransient(c.AsType()));
+                        }
+                    }
+                }
+            }
+
         }
     }
 }

@@ -1,11 +1,13 @@
-/* http://www.zkea.net/ Copyright 2016 ZKEASOFT http://www.zkea.net/licenses */
+/* http://www.zkea.net/ 
+ * Copyright 2017 ZKEASOFT 
+ * http://www.zkea.net/licenses 
+ */
+
+using Easy.Extend;
+using Easy.LINQ;
 using Easy.ViewPort.Validator;
 using System;
 using System.Collections.Generic;
-using Easy.Extend;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using Easy.LINQ;
 
 namespace Easy.ViewPort.Descriptor
 {
@@ -69,7 +71,20 @@ namespace Easy.ViewPort.Descriptor
         /// <summary>
         /// 显示名称
         /// </summary>
-        public string DisplayName { get; set; }
+        private string _displayName;
+        public string DisplayName
+        {
+            get
+            {
+                if (_displayName.IsNotNullAndWhiteSpace())
+                {
+                    return _displayName;
+                }
+                return Localization.Get($"{ModelType.Name}@{Name}");
+            }
+            set { _displayName = value; }
+        }
+
 
         public object DefaultValue { get; set; }
 

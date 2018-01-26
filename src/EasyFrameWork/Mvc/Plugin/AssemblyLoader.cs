@@ -17,14 +17,14 @@ namespace Easy.Mvc.Plugin
     public class AssemblyLoader : AssemblyLoadContext
     {
         private const string ControllerTypeNameSuffix = "Controller";
+        public AssemblyLoader()
+        {
+        }
+
+        public IServiceProvider ServiceProvider { get; set; }
         private Assembly CurrentAssembly;
         private List<Assembly> DependencyAssemblies = new List<Assembly>();
-        private Type PluginType = typeof(IPluginStartup);
-
-        public Action<IPluginStartup> OnLoading { get; set; }
-        public Action<Assembly> OnLoaded { get; set; }
-        public Func<IServiceCollection> Services { get; set; }
-        public IHostingEnvironment HostingEnvironment { get; set; }
+        private TypeInfo PluginTypeInfo = typeof(IPluginStartup).GetTypeInfo();
         public IEnumerable<Assembly> LoadPlugin(string path)
         {
             if (CurrentAssembly == null)
@@ -34,7 +34,6 @@ namespace Easy.Mvc.Plugin
                 CurrentAssembly = assembly;
                 ResolveDenpendency();
                 RegistAssembly(assembly);
-                OnLoaded?.Invoke(assembly);
                 yield return assembly;
                 foreach (var item in DependencyAssemblies)
                 {
@@ -107,7 +106,7 @@ namespace Easy.Mvc.Plugin
         private void RegistAssembly(Assembly assembly)
         {
             List<TypeInfo> controllers = new List<TypeInfo>();
-
+            PluginDescriptor plugin = null;
             foreach (var typeInfo in assembly.DefinedTypes)
             {
                 if (typeInfo.IsAbstract || typeInfo.IsInterface) continue;
@@ -116,28 +115,26 @@ namespace Easy.Mvc.Plugin
                 {
                     controllers.Add(typeInfo);
                 }
-                else if (PluginType.IsAssignableFrom(typeInfo.AsType()))
+                else if (PluginTypeInfo.IsAssignableFrom(typeInfo))
                 {
-                    var plugin = (Activator.CreateInstance(typeInfo.AsType()) as IPluginStartup);
+                    plugin = new PluginDescriptor();
+                    plugin.PluginType = typeInfo.AsType();
+                    plugin.Assembly = assembly;
                     plugin.CurrentPluginPath = Path.GetDirectoryName(assembly.Location);
-                    var binIndex = plugin.CurrentPluginPath.IndexOf("\\bin\\");
+                    var binIndex = plugin.CurrentPluginPath.IndexOf($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}");
                     if (binIndex >= 0)
                     {
                         plugin.CurrentPluginPath = plugin.CurrentPluginPath.Substring(0, binIndex);
                     }
-                    if (Services != null)
-                    {
-                        plugin.HostingEnvironment = HostingEnvironment;
-                        plugin.ConfigureServices(Services());
-                    }
-                    OnLoading?.Invoke(plugin);
                 }
             }
-            if (controllers.Count > 0 && !ActionDescriptorProvider.PluginControllers.ContainsKey(assembly.FullName) && Services != null)
+            if (controllers.Count > 0 && !ActionDescriptorProvider.PluginControllers.ContainsKey(assembly.FullName))
             {
-                IServiceCollection services = Services();
-                controllers.Each(c => services.TryAddTransient(c.AsType()));
                 ActionDescriptorProvider.PluginControllers.Add(assembly.FullName, controllers);
+            }
+            if (plugin != null)
+            {
+                PluginActivtor.LoadedPlugins.Add(plugin);
             }
         }
         protected bool IsController(TypeInfo typeInfo)

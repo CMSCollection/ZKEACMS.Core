@@ -52,7 +52,7 @@ namespace ZKEACMS.Article.Service
             return "~/View-Article";
         }
 
-        public override void Add(ArticleListWidget item)
+        public override ServiceResult<ArticleListWidget> Add(ArticleListWidget item)
         {
             if (item.DetailPageUrl.IsNullOrEmpty())
             {
@@ -63,7 +63,7 @@ namespace ZKEACMS.Article.Service
                 item.PageSize = 5;
             }
             item.IsPageable = true;
-            base.Add(item);
+            return base.Add(item);
         }
 
         public override ArticleListWidget Get(params object[] primaryKeys)
@@ -121,8 +121,12 @@ namespace ZKEACMS.Article.Service
             var currentArticleType = _articleTypeService.Get(cate == 0 ? currentWidget.ArticleTypeID : cate);
             if (currentArticleType != null)
             {
-                var page = actionContext.HttpContext.GetLayout().Page;
-                page.Title = (page.Title ?? "") + " - " + currentArticleType.Title;
+                var layout = actionContext.HttpContext.GetLayout();
+                if (layout != null && layout.Page != null)
+                {
+                    var page = layout.Page;
+                    page.Title = (page.Title ?? "") + " - " + currentArticleType.Title;
+                }
             }
 
             return widget.ToWidgetViewModelPart(new ArticleListWidgetViewModel
