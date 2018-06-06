@@ -13,6 +13,8 @@ using Easy.RepositoryPattern;
 using ZKEACMS.FormGenerator.Service;
 using Easy;
 using ZKEACMS.FormGenerator.Models;
+using ZKEACMS.WidgetTemplate;
+using ZKEACMS.FormGenerator.Service.Validator;
 
 namespace ZKEACMS.FormGenerator
 {
@@ -86,13 +88,28 @@ namespace ZKEACMS.FormGenerator
             yield return new PermissionDescriptor(PermissionKeys.ExportFormData, "自定义表单", "导出表单数据", "");
         }
 
-        public override IEnumerable<Type> WidgetServiceTypes()
+        public override IEnumerable<WidgetTemplateEntity> WidgetServiceTypes()
         {
-            yield return typeof(FormWidgetService);
+            yield return new WidgetTemplateEntity<FormWidgetService>
+            {
+                Title = "表单",
+                GroupName = "4.表单",
+                PartialView = "Widget.Form",
+                Thumbnail = "~/Plugins/ZKEACMS.FormGenerator/Content/images/Widget.Form.png",
+                Order = 1
+            };
         }
 
         public override void ConfigureServices(IServiceCollection serviceCollection)
         {
+            serviceCollection.AddScoped<IOnModelCreating, EntityFrameWorkModelCreating>();
+
+            serviceCollection.AddTransient<IFormDataValidator, DateTimeFormDataValidator>();
+            serviceCollection.AddTransient<IFormDataValidator, EmailFormDataValidator>();
+            serviceCollection.AddTransient<IFormDataValidator, NumberFormDataValidator>();
+            serviceCollection.AddTransient<IFormDataValidator, RequiredFormDataValidator>();
+            serviceCollection.AddTransient<IFormDataValidator, MaxLengthFormDataValidator>();
+
             serviceCollection.TryAddTransient<IFormService, FormService>();
             serviceCollection.TryAddTransient<IFormDataService, FormDataService>();
             serviceCollection.TryAddTransient<IFormDataItemService, FormDataItemService>();
@@ -105,9 +122,7 @@ namespace ZKEACMS.FormGenerator
             {
                 option.DataSourceLinkTitle = "表单";
                 option.DataSourceLink = "~/admin/Form";
-            });
-
-            serviceCollection.AddDbContext<FormGeneratorDbContext>();
+            });            
         }
     }
 }

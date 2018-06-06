@@ -8,6 +8,8 @@ using ZKEACMS.Common.Models;
 using ZKEACMS.Product.Models;
 using ZKEACMS.Product.Service;
 using Easy;
+using ZKEACMS.WidgetTemplate;
+using Easy.RepositoryPattern;
 
 namespace ZKEACMS.Product
 {
@@ -88,15 +90,39 @@ namespace ZKEACMS.Product
             yield return new PermissionDescriptor(PermissionKeys.ManageProductCategoryTag, "产品", "管理产品标签", "");
         }
 
-        public override IEnumerable<Type> WidgetServiceTypes()
+        public override IEnumerable<WidgetTemplateEntity> WidgetServiceTypes()
         {
-            yield return typeof(ProductListWidgetService);
-            yield return typeof(ProductDetailWidgetService);
-            yield return typeof(ProductCategoryWidgetService);
+            string groupName = "3.产品";
+            yield return new WidgetTemplateEntity<ProductListWidgetService>
+            {
+                Title = "产品列表",
+                GroupName = groupName,
+                PartialView = "Widget.ProductList",
+                Thumbnail = "~/Plugins/ZKEACMS.Product/Content/Image/Widget.ProductList.png",
+                Order = 1
+            };
+            yield return new WidgetTemplateEntity<ProductDetailWidgetService>
+            {
+                Title = "产品内容",
+                GroupName = groupName,
+                PartialView = "Widget.ProductDetail",
+                Thumbnail = "~/Plugins/ZKEACMS.Product/Content/Image/Widget.ProductDetail.png",
+                Order = 2
+            };
+            yield return new WidgetTemplateEntity<ProductCategoryWidgetService>
+            {
+                Title = "产品类别",
+                GroupName = groupName,
+                PartialView = "Widget.ProductCategory",
+                Thumbnail = "~/Plugins/ZKEACMS.Product/Content/Image/Widget.ProductCategory.png",
+                Order = 3
+            };
         }
 
         public override void ConfigureServices(IServiceCollection serviceCollection)
         {
+            serviceCollection.AddScoped<IOnModelCreating, EntityFrameWorkModelCreating>();
+
             serviceCollection.AddTransient<IProductService, ProductService>();
             serviceCollection.AddTransient<IProductCategoryService, ProductCategoryService>();
             serviceCollection.AddTransient<IProductCategoryTagService, ProductCategoryTagService>();
@@ -117,8 +143,6 @@ namespace ZKEACMS.Product
             serviceCollection.ConfigureMetaData<ProductCategoryWidget, ProductCategoryWidgetMedata>();
             serviceCollection.ConfigureMetaData<ProductDetailWidget, ProductDetailWidgetMetaData>();
             serviceCollection.ConfigureMetaData<ProductListWidget, ProductListWidgetMetaData>();
-
-            serviceCollection.AddDbContext<ProductDbContext>();
         }
         
     }

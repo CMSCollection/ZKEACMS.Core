@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using ZKEACMS.Message.Service;
 using Easy;
 using ZKEACMS.Message.Models;
+using ZKEACMS.WidgetTemplate;
+using Easy.RepositoryPattern;
 
 namespace ZKEACMS.Message
 {
@@ -67,15 +69,39 @@ namespace ZKEACMS.Message
             yield return new PermissionDescriptor(PermissionKeys.ManageComments, "留言评论", "管理评论", "");
         }
 
-        public override IEnumerable<Type> WidgetServiceTypes()
+        public override IEnumerable<WidgetTemplateEntity> WidgetServiceTypes()
         {
-            yield return typeof(MessageBoxWidgetService);
-            yield return typeof(MessageWidgetService);
-            yield return typeof(CommentsWidgetService);
+            string groupName = "5.消息";
+            yield return new WidgetTemplateEntity<CommentsWidgetService>
+            {
+                Title = "评论箱",
+                GroupName = groupName,
+                PartialView = "Widget.Comments",
+                Thumbnail = "~/Plugins/ZKEACMS.Message/Content/Image/Widget.Comments.png",
+                Order = 1
+            };
+            yield return new WidgetTemplateEntity<MessageWidgetService>
+            {
+                Title = "留言板",
+                GroupName = groupName,
+                PartialView = "Widget.Message",
+                Thumbnail = "~/Plugins/ZKEACMS.Message/Content/Image/Widget.Message.png",
+                Order = 2
+            };
+            yield return new WidgetTemplateEntity<MessageBoxWidgetService>
+            {
+                Title = "留言内容",
+                GroupName = groupName,
+                PartialView = "Widget.MessageBox",
+                Thumbnail = "~/Plugins/ZKEACMS.Message/Content/Image/Widget.MessageBox.png",
+                Order = 3
+            };
         }
 
         public override void ConfigureServices(IServiceCollection serviceCollection)
         {
+            serviceCollection.AddScoped<IOnModelCreating, EntityFrameWorkModelCreating>();
+
             serviceCollection.AddTransient<IMessageService, MessageService>();
             serviceCollection.AddTransient<ICommentsService, CommentsService>();
 
@@ -95,8 +121,7 @@ namespace ZKEACMS.Message
                 option.DataSourceLinkTitle = "评论";
                 option.DataSourceLink = "~/admin/Comments";
             });
-
-            serviceCollection.AddDbContext<MessageDbContext>();
+            
         }
 
         protected override void InitScript(Func<string, ResourceHelper> script)

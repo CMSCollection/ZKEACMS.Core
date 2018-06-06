@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using ZKEACMS.Search.Service;
 using Easy;
 using ZKEACMS.Search.Models;
+using ZKEACMS.WidgetTemplate;
 
 namespace ZKEACMS.Search
 {
@@ -61,9 +62,17 @@ namespace ZKEACMS.Search
             };
         }
 
-        public override IEnumerable<Type> WidgetServiceTypes()
+        public override IEnumerable<WidgetTemplateEntity> WidgetServiceTypes()
         {
-            yield return typeof(SearchWidgetService);
+            string groupName = "1.Í¨ÓÃ";
+            yield return new WidgetTemplateEntity<SearchWidgetService>
+            {
+                Title = "ËÑË÷",
+                GroupName = groupName,
+                PartialView = "Widget.Search",
+                Thumbnail = "~/Plugins/ZKEACMS.Search/Content/Image/Widget.Search.png",
+                Order = 1
+            };
         }
 
         public override void ConfigureServices(IServiceCollection serviceCollection)

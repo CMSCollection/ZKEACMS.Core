@@ -5,7 +5,7 @@
  */
 
 $(function () {
-   
+
     $(".accordion-group>a").click(function () {
         if ($(this).nextAll(".accordion-inner").hasClass("active")) {
             return false;
@@ -26,26 +26,6 @@ $(function () {
     }).on("click", "input[type=submit]", function () {
         $("#ActionType").val($(this).data("value"));
         return true;
-    }).on("click", ".input-group-collection .add", function () {
-        var index = $(this).siblings(".items").children(".item").size();
-        var namePrefix = $(this).data("name-prefex");
-        var template = $($(this).siblings(".Template").html());
-        $("input,select,area", template).attr("data-val", true).each(function () {
-            var name = $(this).attr("name");
-            if (name) {
-                $(this).attr("name", name.replace(namePrefix, namePrefix + "[" + index + "]"));
-            }
-        });
-        template.find(".ActionType").val($(this).data("value"));
-        $(this).siblings(".items").append(template);
-    }).on("click", ".input-group-collection .delete", function () {
-        $(this).parent().hide();
-        $(this).siblings(".hide").find(".ActionType").val($(this).data("value"));
-    }).on("change", ".input-group-collection .form-control", function () {
-        var actionType = $(".ActionType", $(this).closest(".item"));
-        if (actionType.val() !== "Create") {
-            actionType.val("Update");
-        }
     }).on("click", ".input-group .glyphicon.glyphicon-search", function () {
         var obj = $(this);
         window.top.Easy.ShowUrlWindow({
@@ -84,7 +64,7 @@ $(function () {
         });
     }).on("click", ".custom-style-editor", function () {
         window.top.Easy.ShowUrlWindow({
-            url: '/js/StyleEditor/index.html',
+            url: '/admin/StyleEditor/Edit',
             width: 1024,
             title: "编辑样式",
             onLoad: function (box) {
@@ -117,33 +97,13 @@ $(function () {
     });
     $(".form-group select#ZoneID,.form-group select.select").on("mousedown", false);
 
-    var mainMenu = $("#main-menu");
-    var currentSelect;
-    var match = 0;
-    $("a.menu-item", mainMenu).each(function () {
-        var href = $(this).attr("href");
-        if (href) {
-            if (location.pathname.toLocaleLowerCase().indexOf(href.toLowerCase()) === 0) {
-                if (href.length > match) {
-                    currentSelect = $(this);
-                    match = href.length;
-                }
-            }
-        }
-    });
-    if (currentSelect && currentSelect.size()) {
-        currentSelect.addClass("active");
-        if (currentSelect.parent().hasClass("accordion-inner")) {
-            currentSelect.parent().show();
-            currentSelect.parent().prev().addClass("active");
-        }
-    }
+
 
     if ($.fn.datepicker) {
         $(".Date").each(function () {
             if (!$(this).prop("readonly") && !$(this).prop("disabled")) {
                 $(this).datepicker({ language: "zh-CN", format: $(this).attr("JsDateFormat") });
-            }            
+            }
         });
     }
     $(document).on("click", ".nav.nav-tabs a", function () {
@@ -209,7 +169,29 @@ $(function () {
             return null;
         },
         placement: "bottom"
-    }).parent().addClass("loading");
+    }).on("change", function () {
+        var url = $(this).val();
+        if (url && url.indexOf("~/") != 0 && url.indexOf("/") != 0 && url.replace("http://", "").replace("https://", "").indexOf(window.location.hostname) != 0) {
+            if ($(this).siblings(".image-local").length == 0) {
+                $('<div class="input-group-addon image-local"><span class="glyphicon glyphicon-floppy-open upload-external"></span></div>').insertAfter($(this));
+            }
+        } else {
+            $(this).siblings(".image-local").remove();
+        }
+    }).trigger("change").parent().addClass("loading");
+
+    $(document).on("click", ".image-local .upload-external", function () {
+        var group = $(this).closest(".input-group");
+        group.addClass("processing");
+        $.post("/admin/Media/DownLoadExternalImage", { images: [group.find("input").val()] }, function (data) {
+            if (data) {
+                for (var i = 0; i < data.length; i++) {
+                    group.find("input").val(data[i].value).trigger("change");
+                }
+            }
+            group.removeClass("processing");
+        }, "json");
+    });
 
     if (document.addEventListener) {
         document.addEventListener("paste", function (e) {
@@ -273,5 +255,96 @@ $(function () {
         },
         placement: "left"
     });
-    $("#main-menu").slimscroll({ height: $(window).height() - 170 });
+
+    //main menu
+    var mainMenu = $("#main-menu");
+    if (mainMenu.length > 0) {
+        var currentSelect;
+        var match = 0;
+        $("a.menu-item", mainMenu).each(function () {
+            var href = $(this).attr("href");
+            if (href) {
+                if (location.pathname.toLocaleLowerCase().indexOf(href.toLowerCase()) === 0) {
+                    if (href.length > match) {
+                        currentSelect = $(this);
+                        match = href.length;
+                    }
+                }
+            }
+        });
+        if (currentSelect && currentSelect.size()) {
+            currentSelect.addClass("active");
+            if (currentSelect.parent().hasClass("accordion-inner")) {
+                currentSelect.parent().show();
+                currentSelect.parent().prev().addClass("active");
+            }
+        }
+
+        mainMenu.slimscroll({ height: $(window).height() - 170 });
+        var scroll = mainMenu.scrollTop() + $(".menu-item.active", mainMenu).offset().top - mainMenu.offset().top - (mainMenu.height() / 2);
+        if (scroll > 0) {
+            mainMenu.scrollTop(scroll);
+        }
+    }
+
+    //list editor
+
+    $("input,select,textarea", ".input-group-collection .Template").each(function () {
+        if (!$(this).prop("disabled")) {
+            $(this).prop("disabled", true);
+            $(this).attr("editable", true);
+        }
+    });
+
+    $(document).on("click", ".input-group-collection .add", function () {
+        var index = $(this).siblings(".items").children(".item").size();
+        var template = $($(this).siblings(".Template").html());
+        $("input,select,textarea", template).attr("data-val", true).each(function () {
+            if ($(this).attr("editable")) {
+                $(this).prop("disabled", false);
+                $(this).removeAttr("editable");
+            }
+            var name = $(this).attr("name");
+            if (name) {
+                $(this).attr("name", name.replace(/\[(\d+)\]/, "[" + index + "]"));
+            }
+            var id = $(this).attr("id");
+            if (id) {
+                $(this).attr("id", id.replace(/\_(\d+)\_/, "_" + index + "_"));
+            }
+
+            if ($(this).hasClass("Date") && !$(this).prop("readonly") && !$(this).prop("disabled")) {
+                $(this).datepicker({ language: "zh-CN", format: $(this).attr("JsDateFormat") });
+            }
+        });
+
+        $(".field-validation-error,.field-validation-valid", template).each(function () {
+            var msgFor = $(this).attr("data-valmsg-for");
+            $(this).attr("data-valmsg-for", msgFor.replace(/\[(\d+)\]/, "[" + index + "]"))
+        });
+        template.find(".ActionType").val($(this).data("value"));
+        $(this).siblings(".items").append(template);
+
+        var form = $(this).closest("form");
+        form.removeData("validator").removeData("unobtrusiveValidation");
+        $.validator.unobtrusive.parse(form[0]);
+
+    }).on("click", ".input-group-collection .delete", function () {
+        var form = $(this).closest("form");
+        var allValid = true;
+        $("input,select,textarea", $(this).parent()).each(function () {
+            if (allValid) {
+                allValid = form.validate().element("#" + $(this).attr("id"));
+            }
+        });
+        if (allValid) {
+            $(this).parent().hide();
+            $(this).siblings(".hide").find(".ActionType").val($(this).data("value"));
+        }
+    }).on("change", ".input-group-collection .form-control", function () {
+        var actionType = $(".ActionType", $(this).closest(".item"));
+        if (actionType.val() !== "Create") {
+            actionType.val("Update");
+        }
+    })
 });
